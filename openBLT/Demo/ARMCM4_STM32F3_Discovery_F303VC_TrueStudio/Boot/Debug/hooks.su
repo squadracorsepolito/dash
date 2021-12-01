@@ -1,0 +1,2 @@
+hooks.c:154:6:CopInitHook	8	static
+hooks.c:171:6:CopServiceHook	8	static

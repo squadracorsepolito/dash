@@ -1,0 +1,278 @@
+EESchema Schematic File Version 4
+LIBS:Dash-cache
+EELAYER 26 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 4 5
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+Wire Wire Line
+	5350 2900 5700 2900
+Wire Wire Line
+	5350 3000 5700 3000
+$Comp
+L ACT45B-220-2P-TL003:ACT45B-220-2P-TL003 FL1
+U 1 1 5BF25826
+P 5700 2900
+F 0 "FL1" H 6100 3165 50  0000 C CNN
+F 1 "ACT45B-220-2P-TL003" H 6100 3074 50  0000 C CNN
+F 2 "TDK_ACT45B" H 6350 3000 50  0001 L CNN
+F 3 "https://componentsearchengine.com/Datasheets/1/ACT45B-220-2P-TL003.pdf" H 6350 2900 50  0001 L CNN
+F 4 "TDK - ACT45B-220-2P-TL003 - FILTER, COMMON MODE, 22UH, 0.2A, 1812" H 6350 2800 50  0001 L CNN "Description"
+F 5 "" H 6350 2700 50  0001 L CNN "Height"
+F 6 "810-ACT45B2202PTL003" H 6350 2600 50  0001 L CNN "Mouser Part Number"
+F 7 "TDK" H 6350 2500 50  0001 L CNN "Manufacturer_Name"
+F 8 "ACT45B-220-2P-TL003" H 6350 2400 50  0001 L CNN "Manufacturer_Part_Number"
+	1    5700 2900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Interface_CAN_LIN:SN65HVD234 U1
+U 1 1 5BF25A6D
+P 4950 2900
+F 0 "U1" H 4950 3378 50  0000 C CNN
+F 1 "SN65HVD234" H 4950 3287 50  0000 C CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 4950 2400 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/sn65hvd234.pdf" H 4850 3300 50  0001 C CNN
+	1    4950 2900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4950 2600 4950 2300
+Wire Wire Line
+	4550 2900 4100 2900
+Wire Wire Line
+	4100 2800 4550 2800
+Wire Wire Line
+	4550 3000 4500 3000
+Wire Wire Line
+	4500 3000 4500 2300
+Wire Wire Line
+	4500 2300 4950 2300
+Connection ~ 4950 2300
+Wire Wire Line
+	4950 2300 4950 2100
+Wire Wire Line
+	4550 3100 4450 3100
+Wire Wire Line
+	4450 3100 4450 3300
+Wire Wire Line
+	4450 3300 4950 3300
+$Comp
+L PESD2CAN_215:PESD2CAN,215 Z1
+U 1 1 5BF25CBC
+P 8150 3100
+F 0 "Z1" V 8479 3228 50  0000 L CNN
+F 1 "PESD2CAN,215" V 8570 3228 50  0000 L CNN
+F 2 "SOT95P230X110-3N" H 9900 3200 50  0001 L CNN
+F 3 "https://componentsearchengine.com/Datasheets/1/PESD2CAN,215.pdf" H 9900 3100 50  0001 L CNN
+F 4 "NXP PESD2CAN,215 Dual Bi-Directional ESD Protection Diode, 230W peak, 3-Pin SOT23 (TO-236AB)" H 9900 3000 50  0001 L CNN "Description"
+F 5 "1.1" H 9900 2900 50  0001 L CNN "Height"
+F 6 "771-PESD2CAN-T/R" H 9900 2800 50  0001 L CNN "Mouser Part Number"
+F 7 "Nexperia" H 9900 2700 50  0001 L CNN "Manufacturer_Name"
+F 8 "PESD2CAN,215" H 9900 2600 50  0001 L CNN "Manufacturer_Part_Number"
+	1    8150 3100
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R27
+U 1 1 5BF25DB8
+P 7300 2250
+F 0 "R27" H 7370 2296 50  0000 L CNN
+F 1 "60" H 7370 2205 50  0000 L CNN
+F 2 "Resistors_SMD:R_0603" V 7230 2250 50  0001 C CNN
+F 3 "~" H 7300 2250 50  0001 C CNN
+	1    7300 2250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C2
+U 1 1 5BF25DFD
+P 7100 2500
+F 0 "C2" V 6848 2500 50  0000 C CNN
+F 1 "10p" V 6939 2500 50  0000 C CNN
+F 2 "Capacitors_SMD:C_0603_HandSoldering" H 7138 2350 50  0001 C CNN
+F 3 "~" H 7100 2500 50  0001 C CNN
+	1    7100 2500
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7300 2600 7300 2500
+Wire Wire Line
+	7250 2500 7300 2500
+Connection ~ 7300 2500
+Wire Wire Line
+	7300 2500 7300 2400
+Wire Wire Line
+	7300 2100 7300 1900
+$Comp
+L Device:Jumper JP1
+U 1 1 5BF26526
+P 7600 1900
+F 0 "JP1" H 7600 2164 50  0000 C CNN
+F 1 "Jumper" H 7600 2073 50  0000 C CNN
+F 2 "" H 7600 1900 50  0001 C CNN
+F 3 "~" H 7600 1900 50  0001 C CNN
+	1    7600 1900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7900 1900 7900 3000
+Wire Wire Line
+	6500 3000 7900 3000
+Connection ~ 7900 3000
+Wire Wire Line
+	7900 3000 8050 3000
+Wire Wire Line
+	8050 3100 8050 3000
+Connection ~ 8050 3000
+Wire Wire Line
+	8050 3000 8500 3000
+Wire Wire Line
+	8150 3100 8150 2900
+Connection ~ 8150 2900
+Wire Wire Line
+	8150 2900 8500 2900
+$Comp
+L power:GND #PWR012
+U 1 1 5BF26D50
+P 8100 3850
+F 0 "#PWR012" H 8100 3600 50  0001 C CNN
+F 1 "GND" H 8105 3677 50  0000 C CNN
+F 2 "" H 8100 3850 50  0001 C CNN
+F 3 "" H 8100 3850 50  0001 C CNN
+	1    8100 3850
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR03
+U 1 1 5BF26D7E
+P 6950 2500
+F 0 "#PWR03" H 6950 2250 50  0001 C CNN
+F 1 "GND" H 6955 2327 50  0000 C CNN
+F 2 "" H 6950 2500 50  0001 C CNN
+F 3 "" H 6950 2500 50  0001 C CNN
+	1    6950 2500
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR01
+U 1 1 5BF26DA5
+P 4950 3300
+F 0 "#PWR01" H 4950 3050 50  0001 C CNN
+F 1 "GND" H 4955 3127 50  0000 C CNN
+F 2 "" H 4950 3300 50  0001 C CNN
+F 3 "" H 4950 3300 50  0001 C CNN
+	1    4950 3300
+	1    0    0    -1  
+$EndComp
+Connection ~ 4950 3300
+Text Label 4950 2100 0    50   ~ 0
++3.3v
+Text HLabel 8800 2900 2    50   Output ~ 0
+CAN_H
+Text HLabel 8800 3000 2    50   Output ~ 0
+CAN_L
+Text HLabel 4100 2800 0    50   Input ~ 0
+CAN_TX
+Text HLabel 4100 2900 0    50   Input ~ 0
+CAN_RX
+$Comp
+L Device:C C1
+U 1 1 5BF27642
+P 5350 2300
+F 0 "C1" V 5098 2300 50  0000 C CNN
+F 1 "100n" V 5189 2300 50  0000 C CNN
+F 2 "Capacitors_SMD:C_0603_HandSoldering" H 5388 2150 50  0001 C CNN
+F 3 "~" H 5350 2300 50  0001 C CNN
+	1    5350 2300
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR02
+U 1 1 5BF276F4
+P 5500 2300
+F 0 "#PWR02" H 5500 2050 50  0001 C CNN
+F 1 "GND" H 5505 2127 50  0000 C CNN
+F 2 "" H 5500 2300 50  0001 C CNN
+F 3 "" H 5500 2300 50  0001 C CNN
+	1    5500 2300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4950 2300 5200 2300
+$Comp
+L Device:C C3
+U 1 1 5BF279F4
+P 8500 2750
+F 0 "C3" H 8385 2704 50  0000 R CNN
+F 1 "10p" H 8385 2795 50  0000 R CNN
+F 2 "Capacitors_SMD:C_0603_HandSoldering" H 8538 2600 50  0001 C CNN
+F 3 "~" H 8500 2750 50  0001 C CNN
+	1    8500 2750
+	-1   0    0    1   
+$EndComp
+Connection ~ 8500 2900
+Wire Wire Line
+	8500 2900 8800 2900
+$Comp
+L Device:C C4
+U 1 1 5BF27A6C
+P 8500 3150
+F 0 "C4" H 8385 3104 50  0000 R CNN
+F 1 "10p" H 8385 3195 50  0000 R CNN
+F 2 "Capacitors_SMD:C_0603_HandSoldering" H 8538 3000 50  0001 C CNN
+F 3 "~" H 8500 3150 50  0001 C CNN
+	1    8500 3150
+	-1   0    0    1   
+$EndComp
+Connection ~ 8500 3000
+Wire Wire Line
+	8500 3000 8800 3000
+$Comp
+L power:GND #PWR014
+U 1 1 5BF27AAA
+P 8500 3300
+F 0 "#PWR014" H 8500 3050 50  0001 C CNN
+F 1 "GND" H 8505 3127 50  0000 C CNN
+F 2 "" H 8500 3300 50  0001 C CNN
+F 3 "" H 8500 3300 50  0001 C CNN
+	1    8500 3300
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR013
+U 1 1 5BF27AC9
+P 8500 2600
+F 0 "#PWR013" H 8500 2350 50  0001 C CNN
+F 1 "GND" H 8505 2427 50  0000 C CNN
+F 2 "" H 8500 2600 50  0001 C CNN
+F 3 "" H 8500 2600 50  0001 C CNN
+	1    8500 2600
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	6500 2900 7300 2900
+$Comp
+L Device:R R28
+U 1 1 5BF282E7
+P 7300 2750
+F 0 "R28" H 7370 2796 50  0000 L CNN
+F 1 "60" H 7370 2705 50  0000 L CNN
+F 2 "Resistors_SMD:R_0603" V 7230 2750 50  0001 C CNN
+F 3 "~" H 7300 2750 50  0001 C CNN
+	1    7300 2750
+	1    0    0    -1  
+$EndComp
+Connection ~ 7300 2900
+Wire Wire Line
+	7300 2900 8150 2900
+$EndSCHEMATC
