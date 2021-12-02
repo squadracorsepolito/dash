@@ -1,6 +1,6 @@
 EESchema Schematic File Version 4
 LIBS:Dash-cache
-EELAYER 26 0
+EELAYER 29 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
@@ -14,25 +14,6 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-$Sheet
-S 1800 2700 1800 1900
-U 5BD043C1
-F0 "MCU" 50
-F1 "MCU.sch" 50
-F2 "BMS_Led_Cmd" I R 3600 3000 50 
-F3 "Imd_Err_Led_Cmd" I R 3600 2850 50 
-F4 "Rtd_Led" I R 3600 3150 50 
-F5 "Fan_Rad_Cmd" I R 3600 3900 50 
-F6 "Pump_Cmd" I R 3600 3600 50 
-F7 "Fan_Bp_Cmd" I R 3600 3750 50 
-F8 "Buzzer" I R 3600 3300 50 
-F9 "No_Hv_Led" I R 3600 3450 50 
-F10 "RTD_Button" I R 3600 4450 50 
-F11 "CAN_H" O R 3600 4100 50 
-F12 "CAN_L" O R 3600 4250 50 
-F13 "+3.3VD" I L 1800 2850 50 
-F14 "spare_button" I R 3600 4550 50 
-$EndSheet
 $Sheet
 S 5400 2700 1900 1650
 U 5BD043E3
@@ -49,15 +30,15 @@ F9 "BUZZER_CMD" I L 5400 3300 50
 F10 "NO_HV_LED" I R 7300 3450 50 
 F11 "NO_HV_LED_CMD" I L 5400 3450 50 
 F12 "PUMP_AUTO" I R 7300 3600 50 
-F13 "PUMP_CMD" I L 5400 3600 50 
-F14 "BP_FAN_AUTO" I R 7300 3750 50 
-F15 "BP_FAN_CMD" I L 5400 3750 50 
-F16 "RAD_FAN_AUTO" I R 7300 3900 50 
-F17 "RAD_FAN_CMD" I L 5400 3900 50 
-F18 "RTD_IN" I L 5400 4100 50 
-F19 "RTD" I R 7300 4100 50 
-F20 "Spare_Button_In" I R 7300 4250 50 
-F21 "Spare_Button" I L 5400 4250 50 
+F13 "BP_FAN_AUTO" I R 7300 3750 50 
+F14 "RAD_FAN_AUTO" I R 7300 3900 50 
+F15 "RTD_IN" I L 5400 4100 50 
+F16 "RTD" I R 7300 4100 50 
+F17 "Spare_Button_In" I R 7300 4250 50 
+F18 "Spare_Button" I L 5400 4250 50 
+F19 "PWM3" I L 5400 3600 50 
+F20 "PWM2" I L 5400 3750 50 
+F21 "PWM1" I L 5400 3900 50 
 $EndSheet
 Wire Wire Line
 	5400 2850 3600 2850
@@ -106,15 +87,13 @@ Text Label 3850 4100 0    50   ~ 0
 CAN_H
 Text Label 3850 4250 0    50   ~ 0
 CAN_L
-Text Label 9100 4800 2    50   ~ 0
-CAN_H
-Text Label 9100 4900 2    50   ~ 0
+Text Label 9600 4800 0    50   ~ 0
 CAN_L
 Text Label 7250 1450 0    50   ~ 0
 +24v
 Text Label 7250 1550 0    50   ~ 0
 GND
-Text Label 9100 4200 2    50   ~ 0
+Text Label 9100 4500 2    50   ~ 0
 GND
 Wire Wire Line
 	4800 4450 4800 4100
@@ -122,7 +101,7 @@ Wire Wire Line
 	4800 4100 5400 4100
 Wire Wire Line
 	3600 4450 4800 4450
-Text Label 9100 4500 2    50   ~ 0
+Text Label 9100 4200 2    50   ~ 0
 +24v
 Wire Wire Line
 	3600 4550 4900 4550
@@ -155,11 +134,9 @@ Spare_butt
 Text Label 7450 4100 0    50   ~ 0
 RTD
 Text Label 7450 3900 0    50   ~ 0
-RAD
-Text Label 9100 4300 2    50   ~ 0
-FAN
+PWM1
 Text Label 7450 3600 0    50   ~ 0
-PMP
+PWM3
 Text Label 7450 3450 0    50   ~ 0
 HV_LED
 Text Label 7450 3300 0    50   ~ 0
@@ -170,39 +147,106 @@ Text Label 7450 2850 0    50   ~ 0
 IMD_LED
 Text Label 7450 3000 0    50   ~ 0
 BMS_LED
+Text Label 7450 3750 0    50   ~ 0
+PWM2
+Text Label 9600 4500 0    50   ~ 0
+RTD
+Text Label 9600 4400 0    50   ~ 0
+BUZ
+Text Label 9600 5100 0    50   ~ 0
+BMS_LED
+Text Label 9600 4200 0    50   ~ 0
+IMD_LED
+Text Label 9600 5000 0    50   ~ 0
+HV_LED
+Text Label 9600 5300 0    50   ~ 0
+CAN_H
+Text Label 9600 5400 0    50   ~ 0
+CAN_L
+Text Label 9600 4300 0    50   ~ 0
+RTD_LED
+Text Label 9600 5200 0    50   ~ 0
+Spare_butt
 $Comp
-L Dash-rescue:souriau18pin-Connector J2
-U 1 1 5C155455
-P 9350 4100
-F 0 "J2" H 9350 4225 50  0000 C CNN
-F 1 "souriau18pin" H 9350 4134 50  0000 C CNN
-F 2 "footprint:8STA1418" H 9350 4100 50  0001 C CNN
-F 3 "" H 9350 4100 50  0001 C CNN
-	1    9350 4100
+L Connector_Generic:Conn_02x13_Counter_Clockwise J2
+U 1 1 5C83DBA3
+P 9300 4800
+F 0 "J2" H 9350 5617 50  0000 C CNN
+F 1 "Conn_02x13_Counter_Clockwise" H 9350 5526 50  0000 C CNN
+F 2 "26pos:TE_9-6437287-8" H 9300 4800 50  0001 C CNN
+F 3 "~" H 9300 4800 50  0001 C CNN
+	1    9300 4800
 	1    0    0    -1  
 $EndComp
-Text Label 9600 4600 0    50   ~ 0
-RAD
-Text Label 7450 3750 0    50   ~ 0
-FAN
-Text Label 9100 4400 2    50   ~ 0
-PMP
-Text Label 9100 4700 2    50   ~ 0
-RTD
-Text Label 9600 5000 0    50   ~ 0
-BUZ
-Text Label 9600 4500 0    50   ~ 0
-BMS_LED
-Text Label 9600 4300 0    50   ~ 0
-IMD_LED
-Text Label 9600 4400 0    50   ~ 0
-HV_LED
-Text Label 9600 4800 0    50   ~ 0
+Text Label 9600 4700 0    50   ~ 0
 CAN_H
-Text Label 9600 4900 0    50   ~ 0
-CAN_L
-Text Label 9600 4200 0    50   ~ 0
-RTD_LED
+Text Label 9100 4300 2    50   ~ 0
++24v
+Text Label 9100 4400 2    50   ~ 0
++24v
+Text Label 9100 5100 2    50   ~ 0
++24v
 Text Label 9100 5000 2    50   ~ 0
-Spare_butt
++24v
+Text Label 9100 4900 2    50   ~ 0
++24v
+Text Label 9100 4600 2    50   ~ 0
+GND
+Text Label 9100 5200 2    50   ~ 0
+GND
+Text Label 9100 5300 2    50   ~ 0
+GND
+Text Label 9100 4700 2    50   ~ 0
+GND
+$Comp
+L Device:Fuse F1
+U 1 1 5CC43C1E
+P 10150 4250
+F 0 "F1" H 10210 4296 50  0000 L CNN
+F 1 "Fuse" H 10210 4205 50  0000 L CNN
+F 2 "Fuse:Fuse_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 10080 4250 50  0001 C CNN
+F 3 "~" H 10150 4250 50  0001 C CNN
+	1    10150 4250
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR0135
+U 1 1 5CC43DBC
+P 10150 4100
+F 0 "#PWR0135" H 10150 3950 50  0001 C CNN
+F 1 "+5V" H 10165 4273 50  0000 C CNN
+F 2 "" H 10150 4100 50  0001 C CNN
+F 3 "" H 10150 4100 50  0001 C CNN
+	1    10150 4100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9600 4600 10150 4600
+Wire Wire Line
+	10150 4600 10150 4400
+$Sheet
+S 1800 2700 1800 1900
+U 5BD043C1
+F0 "MCU" 50
+F1 "MCU.sch" 50
+F2 "BMS_Led_Cmd" I R 3600 3000 50 
+F3 "Imd_Err_Led_Cmd" I R 3600 2850 50 
+F4 "Rtd_Led" I R 3600 3150 50 
+F5 "Buzzer" I R 3600 3300 50 
+F6 "No_Hv_Led" I R 3600 3450 50 
+F7 "RTD_Button" I R 3600 4450 50 
+F8 "CAN_H" O R 3600 4100 50 
+F9 "CAN_L" O R 3600 4250 50 
+F10 "+3.3VD" I L 1800 2850 50 
+F11 "spare_button" I R 3600 4550 50 
+F12 "PWM1" I R 3600 3900 50 
+F13 "PWM3" I R 3600 3600 50 
+F14 "PWM2" I R 3600 3750 50 
+$EndSheet
+Text Label 9100 4800 2    50   ~ 0
+PWM1
+Text Label 9100 5400 2    50   ~ 0
+PWM2
+Text Label 9600 4900 0    50   ~ 0
+PWM3
 $EndSCHEMATC

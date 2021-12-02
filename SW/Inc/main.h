@@ -60,32 +60,32 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define LED_R_Pin GPIO_PIN_2
-#define LED_R_GPIO_Port GPIOE
-#define LED_G_Pin GPIO_PIN_4
-#define LED_G_GPIO_Port GPIOE
-#define LED_B_Pin GPIO_PIN_1
-#define LED_B_GPIO_Port GPIOF
-#define SPARE_IN_Pin GPIO_PIN_2
-#define SPARE_IN_GPIO_Port GPIOC
-#define RTD_BUTTON_Pin GPIO_PIN_0
-#define RTD_BUTTON_GPIO_Port GPIOA
-#define BMS_LED_Pin GPIO_PIN_10
-#define BMS_LED_GPIO_Port GPIOE
-#define NOHV_LED_Pin GPIO_PIN_12
-#define NOHV_LED_GPIO_Port GPIOE
-#define IMD_LED_Pin GPIO_PIN_14
-#define IMD_LED_GPIO_Port GPIOE
-#define BUZZER_Pin GPIO_PIN_15
+#define BUZZER_Pin GPIO_PIN_2
 #define BUZZER_GPIO_Port GPIOE
-#define RTD_LED_Pin GPIO_PIN_10
-#define RTD_LED_GPIO_Port GPIOB
+#define NOHV_LED_Pin GPIO_PIN_3
+#define NOHV_LED_GPIO_Port GPIOE
+#define RTD_LED_Pin GPIO_PIN_5
+#define RTD_LED_GPIO_Port GPIOE
+#define IMD_LED_Pin GPIO_PIN_10
+#define IMD_LED_GPIO_Port GPIOF
+#define SPARE_IN_Pin GPIO_PIN_1
+#define SPARE_IN_GPIO_Port GPIOA
+#define RTD_BUTTON_Pin GPIO_PIN_2
+#define RTD_BUTTON_GPIO_Port GPIOA
+#define LED_B_Pin GPIO_PIN_3
+#define LED_B_GPIO_Port GPIOA
+#define LED_R_Pin GPIO_PIN_11
+#define LED_R_GPIO_Port GPIOE
+#define LED_G_Pin GPIO_PIN_12
+#define LED_G_GPIO_Port GPIOE
 #define PWM_PUMP_Pin GPIO_PIN_13
 #define PWM_PUMP_GPIO_Port GPIOD
 #define PWM_RAD_FAN_Pin GPIO_PIN_14
 #define PWM_RAD_FAN_GPIO_Port GPIOD
-#define BP_FAN_Pin GPIO_PIN_15
-#define BP_FAN_GPIO_Port GPIOD
+#define PWM_BP_FAN_Pin GPIO_PIN_15
+#define PWM_BP_FAN_GPIO_Port GPIOD
+#define BMS_LED_Pin GPIO_PIN_9
+#define BMS_LED_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

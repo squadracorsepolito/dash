@@ -44,6 +44,8 @@
 /* Private variables ---------------------------------------------------------*/
 CAN_HandleTypeDef hcan;
 
+I2C_HandleTypeDef hi2c1;
+
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
@@ -74,8 +76,9 @@ bool NOHV = false;
 bool ERR_BYTE_RECEIVED = false;
 
 /*PWM Variables*/
-uint8_t PWM_RAD_FAN = 0;
-uint8_t PWM_PUMP = 0;
+uint8_t PWM_RAD_FAN = 50;
+uint8_t PWM_PUMP = 50;
+uint8_t PWM_BP_FAN = 50;
 
 /*State Machine for RTD*/
 enum state {
@@ -89,11 +92,22 @@ enum state {
 } rtd_fsm = 0;
 
 /*RTD variables*/
-bool CTOR_EN_ACK = false;
-bool RTD_EN_ACK = false;
+bool CTOR_EN_ACK  = false;
+bool RTD_EN_ACK   = false;
+bool REBOOT_FSM   = false;
 
+/*Motor & Transmission counter*/
+uint8_t on_seconds = 0;
+uint8_t on_minutes = 0;
+uint8_t on_hours = 0;
+uint8_t on_days = 0;
+uint8_t i2c_buffer[4] = {0};
+bool send_timer_data = false;
 
+/*Ping variable*/
+bool ping = false;
 
+uint16_t brake = 0;
 
 
 /* USER CODE END PV */
@@ -105,6 +119,7 @@ static void MX_CAN_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -123,6 +138,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
+  
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -146,6 +162,7 @@ int main(void)
   MX_TIM3_Init();
   MX_USART1_UART_Init();
   MX_TIM4_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   SetupDashBoard();
   /* USER CODE END 2 */
@@ -197,8 +214,9 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_I2C1;
   PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
+  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_HSI;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -282,7 +300,98 @@ static void MX_CAN_Init(void)
     /* Filter configuration Error */
     Error_Handler();
   }
+
+  sFilterConfig.FilterBank = 3;
+  sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
+  sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
+  sFilterConfig.FilterIdHigh = (CMD_COUNTER_REQUEST_ID_CAN << 5);
+  sFilterConfig.FilterIdLow = (CMD_COUNTER_REQUEST_ID_CAN << 5);
+  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+  sFilterConfig.FilterActivation = ENABLE;
+  sFilterConfig.SlaveStartFilterBank = 14;
+
+  if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
+  {
+    /* Filter configuration Error */
+    Error_Handler();
+  }
+
+  sFilterConfig.FilterBank = 4;
+  sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
+  sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
+  sFilterConfig.FilterIdHigh = (PING_ID_CAN << 5);
+  sFilterConfig.FilterIdLow = (PING_ID_CAN << 5);
+  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+  sFilterConfig.FilterActivation = ENABLE;
+  sFilterConfig.SlaveStartFilterBank = 14;
+
+  if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
+  {
+     /* Filter configuration Error */
+     Error_Handler();
+  }
+
+  sFilterConfig.FilterBank = 5;
+  sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
+  sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
+  sFilterConfig.FilterIdHigh = (SENSORBOARD_4_7_ID_CAN << 5);
+  sFilterConfig.FilterIdLow = (SENSORBOARD_4_7_ID_CAN << 5);
+  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+  sFilterConfig.FilterActivation = ENABLE;
+  sFilterConfig.SlaveStartFilterBank = 14;
+
+  if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
+  {
+     /* Filter configuration Error */
+     Error_Handler();
+  }
   /* USER CODE END CAN_Init 2 */
+
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x2000090E;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Analogue filter 
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter 
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
 
 }
 
@@ -375,7 +484,7 @@ static void MX_TIM4_Init(void)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.OCMode = TIM_OCMODE_PWM2;
   sConfigOC.Pulse = 50;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -383,8 +492,11 @@ static void MX_TIM4_Init(void)
   {
     Error_Handler();
   }
-  sConfigOC.Pulse = 70;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -442,32 +554,44 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, LED_R_Pin|LED_G_Pin|BMS_LED_Pin|NOHV_LED_Pin 
-                          |IMD_LED_Pin|BUZZER_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, BUZZER_Pin|NOHV_LED_Pin|RTD_LED_Pin|LED_R_Pin 
+                          |LED_G_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(IMD_LED_GPIO_Port, IMD_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_B_GPIO_Port, LED_B_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(RTD_LED_GPIO_Port, RTD_LED_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(BMS_LED_GPIO_Port, BMS_LED_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(BP_FAN_GPIO_Port, BP_FAN_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : LED_R_Pin LED_G_Pin BMS_LED_Pin NOHV_LED_Pin 
-                           IMD_LED_Pin BUZZER_Pin */
-  GPIO_InitStruct.Pin = LED_R_Pin|LED_G_Pin|BMS_LED_Pin|NOHV_LED_Pin 
-                          |IMD_LED_Pin|BUZZER_Pin;
+  /*Configure GPIO pins : BUZZER_Pin NOHV_LED_Pin RTD_LED_Pin LED_R_Pin 
+                           LED_G_Pin */
+  GPIO_InitStruct.Pin = BUZZER_Pin|NOHV_LED_Pin|RTD_LED_Pin|LED_R_Pin 
+                          |LED_G_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : IMD_LED_Pin */
+  GPIO_InitStruct.Pin = IMD_LED_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(IMD_LED_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : SPARE_IN_Pin RTD_BUTTON_Pin */
+  GPIO_InitStruct.Pin = SPARE_IN_Pin|RTD_BUTTON_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LED_B_Pin */
   GPIO_InitStruct.Pin = LED_B_Pin;
@@ -476,31 +600,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_B_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SPARE_IN_Pin */
-  GPIO_InitStruct.Pin = SPARE_IN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(SPARE_IN_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : RTD_BUTTON_Pin */
-  GPIO_InitStruct.Pin = RTD_BUTTON_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(RTD_BUTTON_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : RTD_LED_Pin */
-  GPIO_InitStruct.Pin = RTD_LED_Pin;
+  /*Configure GPIO pin : BMS_LED_Pin */
+  GPIO_InitStruct.Pin = BMS_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(RTD_LED_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : BP_FAN_Pin */
-  GPIO_InitStruct.Pin = BP_FAN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(BP_FAN_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(BMS_LED_GPIO_Port, &GPIO_InitStruct);
 
 }
 
@@ -520,6 +625,11 @@ void Error_Handler(void)
   memset(msg,0,strlen(msg));
   sprintf(msg, "\n\rError_Handler occurs\n\r");
   HAL_UART_Transmit(&huart1, (uint8_t*)msg, 30, 20);
+
+  HAL_GPIO_WritePin(GPIOE, LED_G_Pin, OFF);
+  HAL_GPIO_WritePin(GPIOE, LED_R_Pin , ON);
+
+  
   while(1)
   {
     
