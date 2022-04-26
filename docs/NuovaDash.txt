@@ -1,0 +1,65 @@
+Il software della NuovaDash22 dovrà essere dotata delle stesse funzionalità della Dash2019.
+Inoltre, dovranno essere implementate le seguenti funzionalità:
+
+(alcune potrebbero già essere state implementate nella Dash2019)
+(se implementate in modo diverso, seguire le specifiche presenti in questo documento)
+(Se si parla di CAN, utilizzare un CANID generico, che verrà modificato poi in seguito non appena avremo un dbc file pronto)
+(utilizzare la stressa struttura della comunicazione CAN presente nella Dash2019)
+
+(in questo documento manca la procedura per settare la missione, che verrà sviluppata più avanti)
+
+- Tutti i segnali CAN sotto citati, devono essere letti e rinnovati ogni TIMEOUT3 (segliere valore).
+	Se ciò non accade, andare in ERRORE (questo stato verrà spiegato più avanti).
+
+- Se si riceve un messaggio CAN che chiede di azionare il mosfet dell'EBS Linea 1, settare valore alto alla GPIO avente il nome EBS_RELAY1_CMD.
+	Lo stato iniziale di EBS_RELAY1_CMD è basso. 
+	Se non si riceve un messaggio CAN che chiedere di disattivare il mosfet EBS Linea 1 entro TIMEOUT (utilizzare timeout generico)
+	dall'accensione del veicolo (== LVMS alto -> la NuovaDash22 si accende), settare valore alto alla GPIO avente il nome EBS_RELAY1_CMD.
+	Se si riceve un messaggio CAN che chiede di disattivare il mosfet dell'EBS Linea 1, settare valore basso alla GPIO avente il nome EBS_RELAY1_CMD.
+
+- Se si riceve un messaggio CAN che chiede di azionare il mosfet dell'EBS Linea 2, settare valore alto alla GPIO avente il nome EBS_RELAY2_CMD.
+	Lo stato iniziale di EBS_RELAY2_CMD è basso. 
+	Se non si riceve un messaggio CAN che chiedere di disattivare il mosfet EBS Linea 2 entro TIMEOUT (utilizzare timeout generico)
+	dall'accensione del veicolo (== LVMS alto -> la NuovaDash22 si accende), settare valore alto alla GPIO avente il nome EBS_RELAY2_CMD.
+	Se si riceve un messaggio CAN che chiede di disattivare il mosfet dell'EBS Linea 2, settare valore basso alla GPIO avente il nome EBS_RELAY2_CMD.
+	
+- Verificare continuamente lo stato della GPIO Input con il nome TS_CK_IN. 
+	Questo segnale è legato alla pressione del pulsante RTD sul cruscotto. Se viene premuto il pulsante, il segnale TS_CK_IN va a zero.
+	Implementare una funzionalità di debounce per evitare i saltellamenti del pulsante, oppure eventuali disturbi.
+	Verificare che, appena accesa la vettura, il segnale sia alto. Se il segnale è basso, inviare un messaggio di ERRORE sulla linea CAN e portare la dash in stato di ERRORE.
+	Se il pulsante risulta premuto, dopo aver effettuato l'analisi sul segnale, per più di TIMEOUT2, messaggio di ERRORE più stato di ERRORE.
+	Se il pulsante risulta premuto senza errori, inviare un messaggio sulla CAN.
+	
+- Verificare continuamente lo stato della GPIO Input con il nome TS_EX_IN. 
+	Questo segnale è legato alla pressione del pulsante RTD sul telaietto esterno. Se viene premuto il pulsante, il segnale TS_EX_IN va a zero.
+	Implementare una funzionalità di debounce per evitare i saltellamenti del pulsante, oppure eventuali disturbi.
+	Verificare che, appena accesa la vettura, il segnale sia alto. Se il segnale è basso, inviare un messaggio di ERRORE sulla linea CAN e portare la dash in stato di ERRORE.
+	Se il pulsante risulta premuto, dopo aver effettuato l'analisi sul segnale, per più di TIMEOUT2, messaggio di ERRORE più stato di ERRORE.
+	Se il pulsante risulta premuto senza errori, inviare un messaggio sulla CAN.
+	
+- Verificare continuamente lo stato della GPIO Input con il nome SpareButton_IN. 
+	Questo segnale è legato alla pressione di un pulsante sul cruscotto. Se viene premuto il pulsante, il segnale SpareButton_IN va a zero.
+	Implementare una funzionalità di debounce per evitare i saltellamenti del pulsante, oppure eventuali disturbi.
+	Verificare che, appena accesa la vettura, il segnale sia alto. Se il segnale è basso, inviare un messaggio di ERRORE sulla linea CAN e portare la dash in stato di ERRORE.
+	Se il pulsante risulta premuto, dopo aver effettuato l'analisi sul segnale, per più di TIMEOUT2, messaggio di ERRORE più stato di ERRORE.
+	Se il pulsante risulta premuto senza errori, inviare un messaggio sulla CAN e prevedere nel codice una funziona di ButtonPressed_CallBack().
+
+- Se si riceve un messaggio CAN che chiede di accendere il led TSOFF, settare valore alto alla GPIO avente il nome TSOFF_CMD.
+	Lo stato iniziale di TSOFF_CMD è basso. 
+	Se non si riceve un messaggio CAN che chiedere di accendere il led TSOFF entro TIMEOUT dall'accensione del veicolo, settare valore basso alla GPIO avente il nome TSOFF_CMD.
+	Se si riceve un messaggio CAN che chiede di spegnere il led TSOFF, settare valore basso alla GPIO avente il nome TSOFF_CMD.
+	
+- PWM1/PWM2/PWM3/BUZZEREV_CMD/AMS_CMD/IMD_CMD/RTD_CMD same as Dash2019
+
+- ASB_CMD deve avere lo stesso comportamento di AMS_CMD della Dash2019, ma ovviamente basandosi su un messaggio CAN diverso.
+
+- Leggere via CAN lo stato della guida autonoma.
+	Se non si riceve lo stato della guida autonoma, settare come stato AS_Driving.
+	In base allo stato della guida autonoma, settare il valore di ASSI_BLUE_CMD e ASSI_YELLOW_CMD come segue:
+	AS Off       -> ASSI_BLUE_CMD alto, ASSI_YELLOW_CMD alto,  BUZZERAS_CMD basso
+	AS Ready     -> ASSI_BLUE_CMD alto, ASSI_YELLOW_CMD basso, BUZZERAS_CMD basso
+	AS Driving   -> ASSI_BLUE_CMD alto, toggle ASSI_YELLOW_CMD with a frequency of 4Hz and duty 50%, BUZZERAS_CMD basso
+	AS Emergency -> toggle ASSI_BLUE_CMD with f = 4Hz and Duty=50%, ASSI_YELLOW_CMD alto, BUZZERAS_CMD alto
+	AS Finished  -> ASSI_BLUE_CMD basso, ASSI_YELLOW_CMD alto, BUZZERAS_CMD basso
+	
+Stato Errore: while(1) {} // Ci ragioniamo più avanti
