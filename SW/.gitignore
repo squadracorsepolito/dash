@@ -1,1 +1,11 @@
 /Debug/
+[Bb]ackup
+.vscode/
+build/
+.mxproject
+
+*.o
+*.elf
+*.bin
+*.hex
+*.map
