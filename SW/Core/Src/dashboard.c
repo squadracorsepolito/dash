@@ -1,6 +1,7 @@
 /*INCLUDE*/
 
 #include "dashboard.h"
+#include "button.h"
 #include "can.h"
 #include "tim.h"
 #include "usart.h"
@@ -193,7 +194,11 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             // TODO: Turn on all LEDs
             break;
         case IDLE:
-            if (HAL_GPIO_ReadPin(TS_CK_STM_GPIO_Port, TS_CK_STM_Pin))
+            // if (HAL_GPIO_ReadPin(TS_CK_STM_GPIO_Port, TS_CK_STM_Pin))
+            //{
+            //     rtd_fsm = CTOR_EN;
+            // }
+            if (button_get(TS_CK) == BUTTON_PRESSED)
             {
                 rtd_fsm = CTOR_EN;
             }
@@ -252,9 +257,9 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             break;
 
         case RTD_EN:
-            if (HAL_GPIO_ReadPin(TS_CK_STM_GPIO_Port, TS_CK_STM_Pin) && (brake >= BRAKE_THRESHOLD))
+            // if (HAL_GPIO_ReadPin(TS_CK_STM_GPIO_Port, TS_CK_STM_Pin) && (brake >= BRAKE_THRESHOLD))
+            if (button_get(TS_CK) == BUTTON_PRESSED && (brake >= BRAKE_THRESHOLD))
             {
-
                 // CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
 
                 rtd_fsm = WAIT_RTD_EN_ACK;
@@ -477,6 +482,7 @@ void CAN_Tx(void)
         TxHeader.TransmitGlobalTime = DISABLE;
         TxData[0] = 0x46;
         TxData[1] = rtd_fsm;
+        // TxData[2] = (HAL_GPIO_ReadPin(GPIOB, AMS_CMD_Pin)) | (HAL_GPIO_ReadPin(GPIOE, TSOFF_CMD_Pin) << 1) | (HAL_GPIO_ReadPin(GPIOF, IMD_CMD_Pin) << 2);
         TxData[2] = (HAL_GPIO_ReadPin(GPIOB, AMS_CMD_Pin)) | (HAL_GPIO_ReadPin(GPIOE, TSOFF_CMD_Pin) << 1) | (HAL_GPIO_ReadPin(GPIOF, IMD_CMD_Pin) << 2);
         TxData[3] = PWM_PUMP;
         TxData[4] = PWM_RAD_FAN;
@@ -512,22 +518,26 @@ void Debug_CAN_Tx(uint32_t delay_100us)
     }
 }
 
-/*Core SensorBoard*/
+/**
+ * @brief Dash main loop
+ */
 void CoreDashBoard(void)
 {
-
-    LedBlinking(LED2_GPIO_Port, LED2_Pin, 1000);
     // Blink green led
+    LedBlinking(LED2_GPIO_Port, LED2_Pin, 1000);
 
+    // Update state Cockpit's LEDs
     UpdateCockpitLed(5000);
-    /*Update state Cockpit's LEDs*/
 
+    // Update button state
+    button_tick(BUTTON_SAMPLE_TIME_100us);
+
+    // Ready to drive FSM
     ReadyToDriveFSM(500);
-    /*Ready to drive FSM*/
 
+    // Send timer data via CAN
     CAN_Tx();
-    /*Send timer data via CAN*/
 
+    // Send debug packet
     Debug_CAN_Tx(500);
-    /*Send debug packet*/
 }

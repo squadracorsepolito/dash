@@ -55,6 +55,7 @@ C_SOURCES =  \
 /home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_tim_ex.c \
 /home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart.c \
 /home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart_ex.c \
+Core/Src/button.c \
 Core/Src/can.c \
 Core/Src/dashboard.c \
 Core/Src/gpio.c \

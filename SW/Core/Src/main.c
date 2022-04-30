@@ -51,6 +51,7 @@
 /* USER CODE BEGIN PV */
 
 /*Timers variables*/
+// TODO: wire up to a timer
 uint32_t counter = 0;
 
 /*UART1 variabls*/
