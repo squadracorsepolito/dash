@@ -5,8 +5,14 @@ Inoltre, dovranno essere implementate le seguenti funzionalità:
 (se implementate in modo diverso, seguire le specifiche presenti in questo documento)
 (Se si parla di CAN, utilizzare un CANID generico, che verrà modificato poi in seguito non appena avremo un dbc file pronto)
 (utilizzare la stressa struttura della comunicazione CAN presente nella Dash2019)
-
 (in questo documento manca la procedura per settare la missione, che verrà sviluppata più avanti)
+
+MESSAGGIO CAN DI STATO PERIODICO (dSpace -> NuovaDash22):
+ASMS STATE, EBS_RELAY1_CMD, EBS_RELAY2_CMD, AS_STATE
+
+MESSAGGI CAN DI STATO PERIODO:
+STATO_DASH, TS_CK_STATE, TS_EX_STATE, AMI_STATE
+
 
 - Tutti i segnali CAN sotto citati, devono essere letti e rinnovati ogni TIMEOUT3 (segliere valore).
 	Se ciò non accade, andare in ERRORE (questo stato verrà spiegato più avanti).
@@ -28,6 +34,7 @@ Inoltre, dovranno essere implementate le seguenti funzionalità:
 	Implementare una funzionalità di debounce per evitare i saltellamenti del pulsante, oppure eventuali disturbi.
 	Verificare che, appena accesa la vettura, il segnale sia alto. Se il segnale è basso, inviare un messaggio di ERRORE sulla linea CAN e portare la dash in stato di ERRORE.
 	Se il pulsante risulta premuto, dopo aver effettuato l'analisi sul segnale, per più di TIMEOUT2, messaggio di ERRORE più stato di ERRORE.
+	Analisi Segnale = Può risultare premuto solo se ASMS == 0, altrimenti ERRORE.
 	Se il pulsante risulta premuto senza errori, inviare un messaggio sulla CAN.
 	
 - Verificare continuamente lo stato della GPIO Input con il nome TS_EX_IN. 
@@ -35,6 +42,7 @@ Inoltre, dovranno essere implementate le seguenti funzionalità:
 	Implementare una funzionalità di debounce per evitare i saltellamenti del pulsante, oppure eventuali disturbi.
 	Verificare che, appena accesa la vettura, il segnale sia alto. Se il segnale è basso, inviare un messaggio di ERRORE sulla linea CAN e portare la dash in stato di ERRORE.
 	Se il pulsante risulta premuto, dopo aver effettuato l'analisi sul segnale, per più di TIMEOUT2, messaggio di ERRORE più stato di ERRORE.
+	Analisi Segnale = Può risultare premuto solo se ASMS == 1, altrimenti ERRORE.
 	Se il pulsante risulta premuto senza errori, inviare un messaggio sulla CAN.
 	
 - Verificare continuamente lo stato della GPIO Input con il nome SpareButton_IN. 
@@ -43,6 +51,8 @@ Inoltre, dovranno essere implementate le seguenti funzionalità:
 	Verificare che, appena accesa la vettura, il segnale sia alto. Se il segnale è basso, inviare un messaggio di ERRORE sulla linea CAN e portare la dash in stato di ERRORE.
 	Se il pulsante risulta premuto, dopo aver effettuato l'analisi sul segnale, per più di TIMEOUT2, messaggio di ERRORE più stato di ERRORE.
 	Se il pulsante risulta premuto senza errori, inviare un messaggio sulla CAN e prevedere nel codice una funziona di ButtonPressed_CallBack().
+
+	ButtonPressed_CallBack() -> Procedura per scelta AMI.
 
 - Se si riceve un messaggio CAN che chiede di accendere il led TSOFF, settare valore alto alla GPIO avente il nome TSOFF_CMD.
 	Lo stato iniziale di TSOFF_CMD è basso. 
