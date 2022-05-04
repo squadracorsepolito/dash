@@ -28,17 +28,24 @@ void button_tick()
     }
 }
 
-button_state button_get(button btn)
+/**
+ * @brief Returns the logical state of the button
+ *
+ * @param btn button index
+ * @return true if button is PRESSED
+ * @return false if button is RELEASED
+ */
+bool button_get(button btn)
 {
     // If the button has remained in its current state for at least the sample
     // time, then its current state is correct
     if (ReturnTime_100us() - change_time[btn] > BUTTON_SAMPLE_TIME_100us)
     {
-        return state[btn];
+        return state[btn] == BUTTON_PRESSED;
     }
     // Otherwise, if the button's state has changed less than SAMPLE_TIME ago,
     // we return its previous value.
-    return !state[btn];
+    return !(state[btn] == BUTTON_PRESSED);
 }
 
 uint32_t button_last_change_time(button btn)

@@ -21,4 +21,4 @@ typedef enum
 } button_state;
 
 void button_tick();
-button_state button_get(button btn);
+bool button_get(button btn);

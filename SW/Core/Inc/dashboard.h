@@ -14,6 +14,13 @@
 #define DASH_STATUS 0x45
 #define DEBUG
 
+typedef enum
+{
+    ERROR_NONE = 0,
+    ERROR_ILLEGAL_RTD_BTN,
+    ERROR_BRAKE_PRESSURE
+} error_t;
+
 /*CUSTOM FUNCTIONS PROTOTYPES*/
 
 void SetupDashBoard(void);

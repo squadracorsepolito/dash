@@ -21,10 +21,13 @@ extern uint8_t RxData[8];
 extern uint32_t counter;
 
 /*Error Variables*/
+error_t error = ERROR_NONE;
+
 extern bool IMD_ERR;
 extern bool BMS_ERR;
 extern bool NOHV;
 extern bool ERR_BYTE_RECEIVED;
+bool ASMS_ON = false;
 
 /*PWM Variables*/
 extern uint8_t PWM_RAD_FAN;
@@ -32,22 +35,26 @@ extern uint8_t PWM_PUMP;
 extern uint8_t PWM_BP_FAN;
 
 /*State Machine for RTD*/
-enum state
+typedef enum
 {
-    INIT = 0,
-    IDLE,
-    CTOR_EN,
-    WAIT_CTOR_EN_ACK,
-    RTD_EN,
-    WAIT_RTD_EN_ACK,
-    RTD,
-    STOP
-} rtd_fsm;
+    STATE_INIT = 0,
+    STATE_IDLE,
+    STATE_CTOR_EN,
+    STATE_WAIT_CTOR_EN_ACK,
+    STATE_RTD_EN,
+    STATE_WAIT_RTD_EN_ACK,
+    STATE_RTD,
+    STATE_STOP,
+    STATE_ERROR
+} state;
+
+state rtd_fsm = STATE_INIT;
 
 /*RTD_FSM variables*/
 extern bool CTOR_EN_ACK;
 extern bool RTD_EN_ACK;
 extern bool REBOOT_FSM;
+extern bool ASMS_ON;
 
 /*Ping variable*/
 extern bool ping;
@@ -65,7 +72,6 @@ void LedBlinking(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, uint32_t period)
 
     if (delay_fun(&delay_100us_last, period))
     {
-
         HAL_GPIO_TogglePin(GPIOx, GPIO_Pin);
     }
 }
@@ -135,11 +141,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     /*Ready to drive ACK from DSPACE*/
     else if ((RxHeader.StdId == ACK_RTD_ID_CAN) && (RxHeader.DLC == 1))
     {
-        if ((RxData[0] == 1) && (rtd_fsm == WAIT_CTOR_EN_ACK))
+        if ((RxData[0] == 1) && (rtd_fsm == STATE_WAIT_CTOR_EN_ACK))
         {
             CTOR_EN_ACK = true;
         }
-        else if ((RxData[0] == 2) && (rtd_fsm == WAIT_RTD_EN_ACK))
+        else if ((RxData[0] == 2) && (rtd_fsm == STATE_WAIT_RTD_EN_ACK))
         {
             RTD_EN_ACK = true;
         }
@@ -178,7 +184,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 void ReadyToDriveFSM(uint32_t delay_100us)
 {
     static uint32_t delay_100us_last = 0;
-    static int counter_CTOR_EN = 0;
 
     if (delay_fun(&delay_100us_last, delay_100us))
     {
@@ -186,21 +191,25 @@ void ReadyToDriveFSM(uint32_t delay_100us)
 
         switch (rtd_fsm)
         {
-        case INIT:
+        case STATE_INIT:
             // TODO: Check CAN messages
 
             // TODO: Test input states
 
             // TODO: Turn on all LEDs
+
+            rtd_fsm = STATE_IDLE;
             break;
-        case IDLE:
-            // if (HAL_GPIO_ReadPin(TS_CK_STM_GPIO_Port, TS_CK_STM_Pin))
-            //{
-            //     rtd_fsm = CTOR_EN;
-            // }
-            if (button_get(TS_CK) == BUTTON_PRESSED)
+        case STATE_IDLE:
+
+            if ((button_get(TS_EX) && ASMS_ON) || (button_get(TS_CK) && !ASMS_ON))
             {
-                rtd_fsm = CTOR_EN;
+                rtd_fsm = STATE_CTOR_EN;
+            }
+            if ((button_get(TS_EX) && !ASMS_ON) || (button_get(TS_CK) && ASMS_ON))
+            {
+                error = ERROR_ILLEGAL_RTD_BTN;
+                rtd_fsm = STATE_ERROR;
             }
             else
             {
@@ -215,7 +224,7 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             }
             break;
 
-        case CTOR_EN:
+        case STATE_CTOR_EN:
 
             TxHeader.StdId = CMD_RTD_ID_CAN;
             TxHeader.ExtId = CMD_RTD_ID_CAN;
@@ -226,22 +235,22 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             TxData[0] = 0x1;
             CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
 
-            rtd_fsm = WAIT_CTOR_EN_ACK;
+            rtd_fsm = STATE_WAIT_CTOR_EN_ACK;
 
             break;
 
-        case WAIT_CTOR_EN_ACK:
+        case STATE_WAIT_CTOR_EN_ACK:
 
             if (CTOR_EN_ACK && REBOOT_FSM == false)
             {
                 CTOR_EN_ACK = false;
-                rtd_fsm = RTD_EN;
+                rtd_fsm = STATE_RTD_EN;
             }
             else if (REBOOT_FSM)
             {
                 REBOOT_FSM = false;
                 HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, OFF);
-                rtd_fsm = IDLE;
+                rtd_fsm = STATE_IDLE;
             }
             else
             {
@@ -256,34 +265,46 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             }
             break;
 
-        case RTD_EN:
+        case STATE_RTD_EN:
             // if (HAL_GPIO_ReadPin(TS_CK_STM_GPIO_Port, TS_CK_STM_Pin) && (brake >= BRAKE_THRESHOLD))
-            if (button_get(TS_CK) == BUTTON_PRESSED && (brake >= BRAKE_THRESHOLD))
+            if ((button_get(TS_EX) && ASMS_ON) || (button_get(TS_CK) && !ASMS_ON))
             {
-                // CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
-
-                rtd_fsm = WAIT_RTD_EN_ACK;
+                if (brake >= BRAKE_THRESHOLD)
+                {
+                    // CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
+                    rtd_fsm = STATE_WAIT_RTD_EN_ACK;
+                }
+                else
+                {
+                    error = ERROR_BRAKE_PRESSURE;
+                    rtd_fsm = STATE_ERROR;
+                }
+            }
+            if ((button_get(TS_EX) && !ASMS_ON) || (button_get(TS_CK) && ASMS_ON))
+            {
+                error = ERROR_ILLEGAL_RTD_BTN;
+                rtd_fsm = STATE_ERROR;
             }
             else if (REBOOT_FSM)
             {
                 REBOOT_FSM = false;
                 HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, OFF);
-                rtd_fsm = IDLE;
+                rtd_fsm = STATE_IDLE;
             }
             break;
 
-        case WAIT_RTD_EN_ACK:
+        case STATE_WAIT_RTD_EN_ACK:
 
             if (RTD_EN_ACK)
             {
                 RTD_EN_ACK = false;
-                rtd_fsm = RTD;
+                rtd_fsm = STATE_RTD;
             }
             else if (REBOOT_FSM)
             {
                 REBOOT_FSM = false;
                 HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, OFF);
-                rtd_fsm = IDLE;
+                rtd_fsm = STATE_IDLE;
             }
             else
             {
@@ -298,7 +319,7 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             }
             break;
 
-        case RTD:
+        case STATE_RTD:
             if (counter_buzzer < 40)
             {
                 counter_buzzer++;
@@ -310,17 +331,17 @@ void ReadyToDriveFSM(uint32_t delay_100us)
                 HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, OFF);
                 // HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, ON);
                 counter_buzzer = 0;
-                rtd_fsm = STOP;
+                rtd_fsm = STATE_STOP;
             }
 
             break;
 
-        case STOP:
+        case STATE_STOP:
             if (REBOOT_FSM)
             {
                 REBOOT_FSM = false;
                 HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, OFF);
-                rtd_fsm = IDLE;
+                rtd_fsm = STATE_IDLE;
                 TxHeader.StdId = CMD_RTD_ID_CAN;
                 TxHeader.ExtId = CMD_RTD_ID_CAN;
                 TxHeader.RTR = CAN_RTR_DATA;
@@ -482,7 +503,6 @@ void CAN_Tx(void)
         TxHeader.TransmitGlobalTime = DISABLE;
         TxData[0] = 0x46;
         TxData[1] = rtd_fsm;
-        // TxData[2] = (HAL_GPIO_ReadPin(GPIOB, AMS_CMD_Pin)) | (HAL_GPIO_ReadPin(GPIOE, TSOFF_CMD_Pin) << 1) | (HAL_GPIO_ReadPin(GPIOF, IMD_CMD_Pin) << 2);
         TxData[2] = (HAL_GPIO_ReadPin(GPIOB, AMS_CMD_Pin)) | (HAL_GPIO_ReadPin(GPIOE, TSOFF_CMD_Pin) << 1) | (HAL_GPIO_ReadPin(GPIOF, IMD_CMD_Pin) << 2);
         TxData[3] = PWM_PUMP;
         TxData[4] = PWM_RAD_FAN;
