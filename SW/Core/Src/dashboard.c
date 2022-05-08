@@ -1,6 +1,7 @@
 /*INCLUDE*/
 
 #include "dashboard.h"
+#include "ami.h"
 #include "button.h"
 #include "can.h"
 #include "tim.h"
