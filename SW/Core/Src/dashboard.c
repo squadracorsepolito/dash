@@ -6,10 +6,11 @@
 #include "can.h"
 #include "tim.h"
 #include "usart.h"
+#include "utils.h"
 #include <stdio.h>
 /*EXTERNAL GLOBAL VARIABLES*/
 
-extern char msg[30];
+extern char msg[80];
 extern char value[60];
 
 extern CAN_HandleTypeDef hcan;
@@ -19,15 +20,15 @@ extern CAN_RxHeaderTypeDef RxHeader;
 extern uint32_t TxMailbox;
 extern uint8_t TxData[8];
 extern uint8_t RxData[8];
-extern uint32_t counter;
 
 /*Error Variables*/
 error_t error = ERROR_NONE;
 
-extern bool IMD_ERR;
+extern bool ASB_ERR;
 extern bool BMS_ERR;
 extern bool NOHV;
-extern bool ERR_BYTE_RECEIVED;
+extern bool IMD_ERR;
+extern bool TLB_ERR_RECEIVED;
 bool ASMS_ON = false;
 
 /*PWM Variables*/
@@ -64,24 +65,6 @@ extern bool ping;
 extern uint16_t brake;
 
 /*CUSTOM FUNCTIONS*/
-
-/*Toggle a specific GPIO*/
-void LedBlinking(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, uint32_t period)
-{
-
-    static uint32_t delay_100us_last = 0;
-
-    if (delay_fun(&delay_100us_last, period))
-    {
-        HAL_GPIO_TogglePin(GPIOx, GPIO_Pin);
-    }
-}
-
-/*Return the value of the counter that is incremented every 100us*/
-uint32_t ReturnTime_100us(void)
-{
-    return counter;
-}
 
 /*Setup can header and start peripheral*/
 /*
@@ -137,7 +120,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
         NOHV = (bool)(RxData[0] & 1);
         BMS_ERR = (bool)(RxData[0] & 4) || (bool)(RxData[0] & 2);
         IMD_ERR = (bool)(RxData[0] & 4);
-        ERR_BYTE_RECEIVED = true;
+        TLB_ERR_RECEIVED = true;
+    }
+    else if ((RxHeader.StdId == AS_ERROR_ID_CAN) && (RxHeader.DLC == 1))
+    {
+        ASB_ERR = (bool)(RxData[0] & 0b1);
     }
     /*Ready to drive ACK from DSPACE*/
     else if ((RxHeader.StdId == ACK_RTD_ID_CAN) && (RxHeader.DLC == 1))
@@ -193,11 +180,23 @@ void ReadyToDriveFSM(uint32_t delay_100us)
         switch (rtd_fsm)
         {
         case STATE_INIT:
+            HAL_GPIO_WritePin(EBS_RELAY1_CMD_GPIO_Port, EBS_RELAY1_CMD_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(EBS_RELAY2_CMD_GPIO_Port, EBS_RELAY2_CMD_Pin, GPIO_PIN_RESET);
+
+            // Turn on all LEDs
+            HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(ASSI_BLUE_CMD_GPIO_Port, ASSI_BLUE_CMD_Pin, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(ASSI_YELLOW_CMD_GPIO_Port, ASSI_YELLOW_CMD_Pin, GPIO_PIN_SET);
+            ami_set(MISSION_NO);
+
+            // Test input states
+            if (button_get(TS_CK) || button_get(TS_EX) || button_get(Spare))
+            {
+                error = ERROR_INIT_BTN;
+                rtd_fsm = STATE_ERROR;
+            }
+
             // TODO: Check CAN messages
-
-            // TODO: Test input states
-
-            // TODO: Turn on all LEDs
 
             rtd_fsm = STATE_IDLE;
             break;
@@ -367,21 +366,22 @@ void UpdateCockpitLed(uint32_t delay_100us)
 
     if (delay_fun(&delay_100us_last, delay_100us))
     {
+        HAL_GPIO_WritePin(ASB_CMD_GPIO_Port, ASB_CMD_Pin, ASB_ERR);
 
-        if (ERR_BYTE_RECEIVED)
+        if (TLB_ERR_RECEIVED)
         {
-            ERR_BYTE_RECEIVED = false;
-            HAL_GPIO_WritePin(GPIOB, AMS_CMD_Pin, BMS_ERR);
-            HAL_GPIO_WritePin(GPIOE, TSOFF_CMD_Pin, NOHV);
-            HAL_GPIO_WritePin(GPIOF, IMD_CMD_Pin, IMD_ERR);
+            TLB_ERR_RECEIVED = false;
+            HAL_GPIO_WritePin(AMS_CMD_GPIO_Port, AMS_CMD_Pin, BMS_ERR);
+            HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, NOHV);
+            HAL_GPIO_WritePin(IMD_CMD_GPIO_Port, IMD_CMD_Pin, IMD_ERR);
 
-            /*LED ON or OFF depending on ERR_BYTE*/
+            /*LED ON or OFF depending on ERR_RECEIVED*/
         }
         else
         {
-            HAL_GPIO_WritePin(GPIOB, AMS_CMD_Pin, ON);
-            HAL_GPIO_WritePin(GPIOE, TSOFF_CMD_Pin, OFF);
-            HAL_GPIO_WritePin(GPIOF, IMD_CMD_Pin, ON);
+            HAL_GPIO_WritePin(AMS_CMD_GPIO_Port, AMS_CMD_Pin, ON);
+            HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, OFF);
+            HAL_GPIO_WritePin(IMD_CMD_GPIO_Port, IMD_CMD_Pin, ON);
             /*LED always ON, timeout can*/
         }
     }
@@ -414,20 +414,11 @@ void SetupDashBoard(void)
 
     CAN_Config();
 
-    sprintf(msg, "DashBoard Boot - v1.0\n\r");
+    sprintf(msg, "Dashboard 2022 Boot - build %s @ %s\n\r", __DATE__, __TIME__);
     HAL_UART_Transmit(&huart1, (uint8_t *)msg, 30, 20);
     memset(msg, 0, strlen(msg));
     sprintf(msg, "Configuration complete\n\r\n\r");
     HAL_UART_Transmit(&huart1, (uint8_t *)msg, 30, 20);
-
-    HAL_GPIO_WritePin(GPIOB, AMS_CMD_Pin, ON);
-    HAL_GPIO_WritePin(GPIOF, IMD_CMD_Pin, ON);
-    HAL_GPIO_WritePin(GPIOE, TSOFF_CMD_Pin, ON);
-    HAL_Delay(1000);
-    HAL_GPIO_WritePin(GPIOB, AMS_CMD_Pin, OFF);
-    HAL_GPIO_WritePin(GPIOE, TSOFF_CMD_Pin, OFF);
-    HAL_GPIO_WritePin(GPIOF, IMD_CMD_Pin, OFF);
-    /*Proof that LEDs work*/
 
 #ifdef DEBUG
     memset(msg, 0, strlen(msg));
@@ -436,27 +427,6 @@ void SetupDashBoard(void)
 #endif
 
     /*BootScreen with verion of the code and message of complete configuration*/
-}
-
-/*Return true if the delay is completed, false otherwise*/
-int delay_fun(uint32_t *delay_100us_last, uint32_t delay_100us)
-{
-
-    uint32_t current_time = ReturnTime_100us();
-
-    if (current_time > *delay_100us_last && (current_time - *delay_100us_last) >= delay_100us)
-    {
-        *delay_100us_last = current_time;
-        return 1;
-    }
-    else if (current_time < *delay_100us_last && (0xFFFFFFFF - current_time - *delay_100us_last) >= delay_100us)
-    {
-        *delay_100us_last = current_time;
-        return 1;
-    }
-    /*In case of timer overflow, the delay is computed correctly*/
-
-    return 0;
 }
 
 /*Send message to CAN BUS*/

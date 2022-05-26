@@ -30,15 +30,17 @@ extern "C"
 #include "main.h"
 
     /* USER CODE BEGIN Includes */
-
     /* USER CODE END Includes */
 
     extern CAN_HandleTypeDef hcan;
 
 /* USER CODE BEGIN Private defines */
+#define CHANGEME 0x69
+
 #define BOOTLOADER_ID_CAN 0x004
 #define PING_ID_CAN 0x146
 #define TLB_ERROR_ID_CAN 0x020
+#define AS_ERROR_ID_CAN CHANGEME
 #define ACK_RTD_ID_CAN 0x040
 #define PWM_ID_CAN 0x041
 #define CMD_RTD_ID_CAN 0x042

@@ -55,7 +55,7 @@
 uint32_t counter = 0;
 
 /*UART1 variabls*/
-char msg[30] = "";
+char msg[80] = "";
 char value[60] = "";
 
 /*CAN variables*/
@@ -66,10 +66,11 @@ uint8_t TxData[8] = {0};
 uint8_t RxData[8] = {0};
 
 /*Error Variables*/
-bool IMD_ERR = false;
+bool ASB_ERR = false;
 bool BMS_ERR = false;
 bool NOHV = false;
-bool ERR_BYTE_RECEIVED = false;
+bool IMD_ERR = false;
+bool TLB_ERR_RECEIVED = false;
 
 /*PWM Variables*/
 uint8_t PWM_RAD_FAN = 50;

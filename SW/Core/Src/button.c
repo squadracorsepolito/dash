@@ -1,6 +1,7 @@
 
 #include "button.h"
 #include "main.h"
+#include "utils.h"
 
 // Map GPIOs to button index
 const GPIO_TypeDef *button_gpio[BUTTON_COUNT] = {TS_CK_STM_GPIO_Port, TS_EX_STM_GPIO_Port, SpareButton_STM_GPIO_Port};
