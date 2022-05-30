@@ -9,6 +9,6 @@ typedef enum
     AS_EMERGENCY
 } as_state_t;
 
-extern as_state_t state;
+extern as_state_t as_state;
 
 void as_run();

@@ -2,6 +2,7 @@
 
 #include "dashboard.h"
 #include "ami.h"
+#include "as_fsm.h"
 #include "button.h"
 #include "can.h"
 #include "tim.h"
@@ -123,6 +124,27 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
         TLB_ERR_RECEIVED = true;
     }
     else if ((RxHeader.StdId == AS_ERROR_ID_CAN) && (RxHeader.DLC == 1))
+    {
+        switch (RxData[0])
+        {
+        case 0:
+            as_state = AS_OFF;
+            break;
+        case 1:
+            as_state = AS_READY;
+            break;
+        case 2:
+            as_state = AS_DRIVING;
+            break;
+        case 3:
+            as_state = AS_FINISHED;
+            break;
+        case 4:
+            as_state = AS_EMERGENCY;
+            break;
+        }
+    }
+    else if ((RxHeader.StdId == AS_STATE) && (RxHeader.DLC == 1))
     {
         ASB_ERR = (bool)(RxData[0] & 0b1);
     }
