@@ -1,7 +1,0 @@
-../Core/Src/BLT/com.c:51:6:ComInit	8	static
-../Core/Src/BLT/com.c:70:6:ComTask	16	static
-../Core/Src/BLT/com.c:93:6:ComFree	4	static
-../Core/Src/BLT/com.c:105:6:ComTransmitPacket	16	static
-../Core/Src/BLT/com.c:128:12:ComGetActiveInterfaceMaxRxLen	16	static
-../Core/Src/BLT/com.c:166:12:ComGetActiveInterfaceMaxTxLen	16	static
-../Core/Src/BLT/com.c:203:10:ComIsConnected	16	static

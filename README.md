@@ -1,4 +1,5 @@
-# Dashboard
+
+# NuovaDash22
 
 Benvenuti nella repository ufficiale contente i file utilizzati per la scheda NuovaDash22 utilizzata dal team Squadra Corse Driverless nell'anno 2021/22
 
@@ -8,7 +9,69 @@ Repository mantenuta da Matteo Bonora (Software) e Francesco Minichelli (Hardwar
 
 Project Properties -> C/C++ Build -> Settings -> Tool Settings -> MCU Post build outputs -> Selezionare "Convert to Motorola S-record file (-O ihex)"
 
-## Analisi Dashboard SC19
+### Run this command on the terminal to upload the code
+
+1) Setup CAN0 interface with a Kvaser device connected to the PC Host
+2a) Open MicroBoot
+2b) Open BootCommander (same as MicroBoot but on a terminal)
+3) Make sure the Target board is off and the can bus of the board connected to the Kvaser
+  - There should be no problem if other device are connected on same can bus. If problem arises, turn off all other devices.
+4a) Setup MicroBoot with the firmware to upload. 
+4b) Lunch the terminal command
+5) Power on the Target board.
+
+```shell
+cd /home/francesco/Desktop/openblt-master/Host
+sudo ip link set can0 type can bitrate 1000000
+sudo ip link set can0 up
+./MicroBoot
+```
+
+La configurazione attuale è la seguente
+CAN SPEED = 1Mbit
+CAN message ID target-\>host = (0xFFA)
+CAN message ID host-\>target = (0x007)
+
+## Analisi NuovaDash22
+
+I Micro attualmente utilizzati sono:
+- STM32F303VCTx (256Kb version)
+- STM32F303VETx (512Kb version)
+
+Le periferiche attualmente utilizzate sono:
+- CAN
+- GPIO
+
+Di seguito una descrizione (tensione, impedenza) per ogni pin del connettore in base all'uscita del micro.
+
+| Signal Name  	| GPIO PIN SET 	 | GPIO PIN RESET | PIN NAME |
+| ------------- | -------------- | -------------- | -------- |
+| ASB CMD  	| ASB LED ON  	 | ASB LED OFF	  | PA8      |
+| AMS CMD  	| AMS LED ON  	 | AMS LED OFF    | PC6      |
+| IMD CMD  	| IMD LED ON  	 | IMD LED OFF    | PC8      |
+| RTD CMD  	| RTD LED ON  	 | RTD LED OFF    | PC6      |
+| TSOFF CMD  	| TSOFF LED ON 	 | TSOFF LED OFF  | PC11     |
+| ASSI B CMD  	| ASSI B LED OFF | ASSI B LED ON  | PB8      |
+| ASSI Y CMD  	| ASSI Y LED OFF | ASSI Y LED ON  | PB7      |
+| AMI 1 CMD  	| AMI 1 LED OFF  | AMI 1 LED ON   | PB5      |
+| AMI 2 CMD  	| AMI 2 LED OFF  | AMI 2 LED ON   | PD6      |
+| AMI 3 CMD  	| AMI 3 LED OFF  | AMI 3 LED ON   | PD4      |
+
+
+Appena la scheda parte, sia durante il bootloader che durante le prime fasi del programma (1 secondo di bootloader + [0-2.5 max] secondi di programma), al fine di rispettare la regola T11.9.5 che cito: 
+
+> T 11.9.5 Indicators according to T 11.9.1 with safe state “illuminated” (e.g. absence of failures is not actively indicated) must be illuminated for 1 s to 3 s for visible check after power cycling the LVMS. 
+
+ci si aspetta il seguente stato per ogni apparato della macchina:
+
+- LED ASSI YELLOW (durante i test questo colore sarà BLU)
+- LED AMI tutti accesi
+- BuzzerAS Spento
+- BuzzerEv Spento
+- Cockpit tutto acceso tranne TSOFF
+
+
+### Analisi Dashboard SC19
 
 La scheda può essere suddivisa in 4 sezioni:
 

@@ -1,5 +1,0 @@
-../Core/Src/BLT/backdoor.c:85:6:BackDoorInit	8	static
-../Core/Src/BLT/backdoor.c:124:6:BackDoorCheck	8	static
-../Core/Src/BLT/backdoor.c:182:6:BackDoorSetExtension	16	static
-../Core/Src/BLT/backdoor.c:195:12:BackDoorGetExtension	4	static
-../Core/Src/BLT/backdoor.c:210:6:BackDoorRestartTimer	8	static

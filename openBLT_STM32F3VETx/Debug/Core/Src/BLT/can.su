@@ -1,4 +1,0 @@
-../Core/Src/BLT/can.c:113:17:CanGetSpeedConfig	48	static
-../Core/Src/BLT/can.c:154:6:CanInit	64	static
-../Core/Src/BLT/can.c:242:6:CanTransmitPacket	56	static
-../Core/Src/BLT/can.c:299:10:CanReceivePacket	56	static

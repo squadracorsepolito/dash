@@ -1,6 +1,0 @@
-../Core/Src/BLT/timer.c:50:6:TimerInit	8	static
-../Core/Src/BLT/timer.c:72:6:TimerReset	4	static
-../Core/Src/BLT/timer.c:86:6:TimerUpdate	4	static
-../Core/Src/BLT/timer.c:102:12:TimerGet	8	static
-../Core/Src/BLT/timer.c:122:10:HAL_GetTick	8	static
-../Core/Src/BLT/timer.c:140:13:SysTick_Handler	4	static
