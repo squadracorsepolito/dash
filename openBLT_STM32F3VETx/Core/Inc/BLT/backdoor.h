@@ -39,5 +39,19 @@ blt_int32u BackDoorGetExtension(void);
 void       BackDoorRestartTimer(void);
 #endif
 
+/****************************************************************************************
+* Macro definitions
+****************************************************************************************/
+#if (BOOT_BACKDOOR_HOOKS_ENABLE == 0)
+#ifndef BOOT_BACKDOOR_ENTRY_TIMEOUT_MS
+/** \brief Sets the time in milliseconds that the backdoor is open, but allow an
+ *         override for this time. To change this value, simply add the macro
+ *         BOOT_BACKDOOR_ENTRY_TIMEOUT_MS to blt_conf.h with your desired backdoor
+ *         open time in milliseconds.
+ */
+#define BOOT_BACKDOOR_ENTRY_TIMEOUT_MS  (1000)
+#endif
+#endif /* BOOT_BACKDOOR_HOOKS_ENABLE == 0 */
+
 #endif /* BACKDOOR_H */
 /*********************************** end of backdoor.h *********************************/
