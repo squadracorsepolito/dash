@@ -62,6 +62,7 @@
 #include "timer.h"                                    /* timer driver module           */
 #include "backdoor.h"                                 /* backdoor entry module         */
 #include "com.h"                                      /* communication interface       */
+#include "led.h"                                      /* led blinking			       */
 #include "flash.h"
 
 /****************************************************************************************
