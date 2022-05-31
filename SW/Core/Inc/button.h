@@ -5,13 +5,14 @@
 #include <stdbool.h>
 
 #define BUTTON_COUNT 3
-#define BUTTON_SAMPLE_TIME_100us 200
+#define BUTTON_SAMPLE_TIME_100us 100
+#define BUTTON_DEBOUNCE_TIME_100us (BUTTON_SAMPLE_TIME_100us * 10)
 
 typedef enum
 {
-    TS_CK = 0,
-    TS_EX = 1,
-    Spare = 2
+    BUTTON_TS_CK = 0,
+    BUTTON_TS_EX = 1,
+    BUTTON_Spare = 2
 } button;
 
 typedef enum
@@ -20,5 +21,5 @@ typedef enum
     BUTTON_RELEASED = 1
 } button_state;
 
-void button_tick();
+void button_sample();
 bool button_get(button btn);

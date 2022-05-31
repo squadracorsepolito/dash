@@ -8,10 +8,10 @@ const GPIO_TypeDef *button_gpio[BUTTON_COUNT] = {TS_CK_STM_GPIO_Port, TS_EX_STM_
 const uint16_t button_pin[BUTTON_COUNT] = {TS_CK_STM_Pin, TS_EX_STM_Pin, SpareButton_STM_Pin};
 
 // State and last change time of each button
-bool state[BUTTON_COUNT] = {BUTTON_RELEASED};
+bool state[BUTTON_COUNT] = {BUTTON_PRESSED, BUTTON_PRESSED, BUTTON_PRESSED};
 uint32_t change_time[BUTTON_COUNT] = {0};
 
-void button_tick()
+void button_sample()
 {
     static uint32_t delay_100us_last = 0;
 
@@ -19,11 +19,18 @@ void button_tick()
     {
         for (uint8_t i = 0; i < BUTTON_COUNT; i++)
         {
-            // If state is different from input, then update state
             if (state[i] != HAL_GPIO_ReadPin((GPIO_TypeDef *)button_gpio[i], button_pin[i]))
             {
-                state[i] = !state[i];
-                change_time[i] = delay_100us_last;
+                // If state changed, then update change_time
+                change_time[i] = ReturnTime_100us();
+            }
+            else
+            {
+                if (ReturnTime_100us() - change_time[i] >= BUTTON_DEBOUNCE_TIME_100us)
+                {
+                    // If state hasn't changed for the last DEBOUNCE_TIME, then we toggle the state
+                    state[i] = !state[i];
+                }
             }
         }
     }
@@ -38,15 +45,7 @@ void button_tick()
  */
 bool button_get(button btn)
 {
-    // If the button has remained in its current state for at least the sample
-    // time, then its current state is correct
-    if (ReturnTime_100us() - change_time[btn] > BUTTON_SAMPLE_TIME_100us)
-    {
-        return state[btn] == BUTTON_PRESSED;
-    }
-    // Otherwise, if the button's state has changed less than SAMPLE_TIME ago,
-    // we return its previous value.
-    return !(state[btn] == BUTTON_PRESSED);
+    return state[btn] == BUTTON_PRESSED;
 }
 
 uint32_t button_last_change_time(button btn)

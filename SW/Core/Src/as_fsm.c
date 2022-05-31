@@ -3,14 +3,14 @@
 #include "main.h"
 #include "utils.h"
 
-#define PERIOD_4HZ_us 1250
+#define PERIOD_4HZ_100us 1250
 as_state_t as_state = AS_OFF;
 
 void as_run()
 {
     static uint32_t delay_100us_last = 0;
 
-    if (delay_fun(&delay_100us_last, PERIOD_4HZ_us))
+    if (delay_fun(&delay_100us_last, PERIOD_4HZ_100us))
     {
         switch (as_state)
         {

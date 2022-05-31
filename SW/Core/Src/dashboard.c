@@ -193,7 +193,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 /*FSM*/
 void ReadyToDriveFSM(uint32_t delay_100us)
 {
-    static uint32_t delay_100us_last = 0;
+    // Set first delay back to give time for the buttons to debounce
+    static uint32_t delay_100us_last = -BUTTON_DEBOUNCE_TIME_100us * 2;
 
     if (delay_fun(&delay_100us_last, delay_100us))
     {
@@ -212,7 +213,9 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             ami_set(MISSION_NO);
 
             // Test input states
-            if (button_get(TS_CK) || button_get(TS_EX) || button_get(Spare))
+            if (button_get(BUTTON_TS_CK) ||
+                button_get(BUTTON_TS_EX) ||
+                button_get(BUTTON_Spare))
             {
                 error = ERROR_INIT_BTN;
                 rtd_fsm = STATE_ERROR;
@@ -223,12 +226,11 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             rtd_fsm = STATE_IDLE;
             break;
         case STATE_IDLE:
-
-            if ((button_get(TS_EX) && ASMS_ON) || (button_get(TS_CK) && !ASMS_ON))
+            if ((button_get(BUTTON_TS_EX) && ASMS_ON) || (button_get(BUTTON_TS_CK) && !ASMS_ON))
             {
                 rtd_fsm = STATE_CTOR_EN;
             }
-            if ((button_get(TS_EX) && !ASMS_ON) || (button_get(TS_CK) && ASMS_ON))
+            if ((button_get(BUTTON_TS_EX) && !ASMS_ON) || (button_get(BUTTON_TS_CK) && ASMS_ON))
             {
                 error = ERROR_ILLEGAL_RTD_BTN;
                 rtd_fsm = STATE_ERROR;
@@ -289,7 +291,7 @@ void ReadyToDriveFSM(uint32_t delay_100us)
 
         case STATE_RTD_EN:
             // if (HAL_GPIO_ReadPin(TS_CK_STM_GPIO_Port, TS_CK_STM_Pin) && (brake >= BRAKE_THRESHOLD))
-            if ((button_get(TS_EX) && ASMS_ON) || (button_get(TS_CK) && !ASMS_ON))
+            if ((button_get(BUTTON_TS_EX) && ASMS_ON) || (button_get(BUTTON_TS_CK) && !ASMS_ON))
             {
                 if (brake >= BRAKE_THRESHOLD)
                 {
@@ -302,7 +304,7 @@ void ReadyToDriveFSM(uint32_t delay_100us)
                     rtd_fsm = STATE_ERROR;
                 }
             }
-            if ((button_get(TS_EX) && !ASMS_ON) || (button_get(TS_CK) && ASMS_ON))
+            if ((button_get(BUTTON_TS_EX) && !ASMS_ON) || (button_get(BUTTON_TS_CK) && ASMS_ON))
             {
                 error = ERROR_ILLEGAL_RTD_BTN;
                 rtd_fsm = STATE_ERROR;
@@ -544,7 +546,7 @@ void CoreDashBoard(void)
     UpdateCockpitLed(5000);
 
     // Update button state
-    button_tick(BUTTON_SAMPLE_TIME_100us);
+    button_sample(BUTTON_SAMPLE_TIME_100us);
 
     // Ready to drive FSM
     ReadyToDriveFSM(500);
