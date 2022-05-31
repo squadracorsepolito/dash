@@ -1,4 +1,0 @@
-can.c:116:17:CanGetSpeedConfig	40	static
-can.c:157:6:CanInit	64	static
-can.c:243:6:CanTransmitPacket	8	static
-can.c:284:10:CanReceivePacket	16	static

@@ -1,0 +1,12 @@
+../Core/Src/BLT/flash.c:247:6:FlashInit	4	static
+../Core/Src/BLT/flash.c:260:6:FlashReinit	4	static
+../Core/Src/BLT/flash.c:278:10:FlashWrite	32	static
+../Core/Src/BLT/flash.c:315:10:FlashErase	48	static
+../Core/Src/BLT/flash.c:395:10:FlashWriteChecksum	16	static
+../Core/Src/BLT/flash.c:463:10:FlashVerifyChecksum	16	static
+../Core/Src/BLT/flash.c:493:10:FlashDone	8	static
+../Core/Src/BLT/flash.c:523:10:FlashGetUserProgBaseAddress	4	static
+../Core/Src/BLT/flash.c:537:17:FlashInitBlock	16	static
+../Core/Src/BLT/flash.c:566:25:FlashSwitchBlock	16	static
+../Core/Src/BLT/flash.c:618:17:FlashAddToBlock	40	static
+../Core/Src/BLT/flash.c:689:17:FlashWriteBlock	40	static

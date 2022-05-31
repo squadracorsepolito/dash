@@ -1,0 +1,2 @@
+../Core/Src/BLT/cop.c:49:6:CopInit	4	static
+../Core/Src/BLT/cop.c:62:6:CopService	4	static
