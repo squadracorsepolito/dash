@@ -39,7 +39,7 @@
 * Local data declarations
 ****************************************************************************************/
 /** \brief Holds the desired LED blink interval time. */
-static blt_int16u ledBlinkIntervalMs;
+static blt_int32u ledBlinkIntervalMs;
 
 
 /************************************************************************************//**

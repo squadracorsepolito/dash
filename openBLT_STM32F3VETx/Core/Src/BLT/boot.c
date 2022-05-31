@@ -47,6 +47,8 @@ void BootInit(void)
   TimerInit();
   /* initialize the non-volatile memory driver */
   NvmInit();
+  /* initialize the leds */
+  LedBlinkInit(TimerGet());
 #if (BOOT_COM_ENABLE > 0)
   /* initialize the communication module */
   ComInit();
@@ -67,12 +69,14 @@ void BootTask(void)
   CopService();
   /* update the millisecond timer */
   TimerUpdate();
-#if (BOOT_COM_ENABLE > 0)
+  #if (BOOT_COM_ENABLE > 0)
   /* process possibly pending communication data */
   ComTask();
-#endif
+  #endif
   /* control the backdoor */
   BackDoorCheck();
+  /* Let LED blink if time has passed */
+  LedBlinkTask();
 } /*** end of BootTask ***/
 
 // ONLY FOR F3
