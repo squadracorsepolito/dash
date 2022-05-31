@@ -202,8 +202,8 @@ void ReadyToDriveFSM(uint32_t delay_100us)
         switch (rtd_fsm)
         {
         case STATE_INIT:
-            HAL_GPIO_WritePin(EBS_RELAY1_CMD_GPIO_Port, EBS_RELAY1_CMD_Pin, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(EBS_RELAY2_CMD_GPIO_Port, EBS_RELAY2_CMD_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(EBS_RELAY1_GPIO_Port, EBS_RELAY1_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(EBS_RELAY2_GPIO_Port, EBS_RELAY2_Pin, GPIO_PIN_RESET);
 
             // Turn on all LEDs
             HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, GPIO_PIN_SET);
@@ -537,7 +537,8 @@ void Debug_CAN_Tx(uint32_t delay_100us)
 void CoreDashBoard(void)
 {
     // Blink green led
-    LedBlinking(LED2_GPIO_Port, LED2_Pin, 1000);
+    static uint32_t led_blink = 0;
+    LedBlinking(LED2_GPIO_Port, LED2_Pin, &led_blink, 2000);
 
     // Update state Cockpit's LEDs
     UpdateCockpitLed(5000);
@@ -547,6 +548,8 @@ void CoreDashBoard(void)
 
     // Ready to drive FSM
     ReadyToDriveFSM(500);
+
+    as_run();
 
     // Send timer data via CAN
     CAN_Tx();

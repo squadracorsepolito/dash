@@ -59,10 +59,10 @@ extern "C"
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define EBS_RELAY1_CMD_Pin GPIO_PIN_10
-#define EBS_RELAY1_CMD_GPIO_Port GPIOD
-#define EBS_RELAY2_CMD_Pin GPIO_PIN_11
-#define EBS_RELAY2_CMD_GPIO_Port GPIOD
+#define EBS_RELAY1_Pin GPIO_PIN_10
+#define EBS_RELAY1_GPIO_Port GPIOD
+#define EBS_RELAY2_Pin GPIO_PIN_11
+#define EBS_RELAY2_GPIO_Port GPIOD
 #define TS_CK_STM_Pin GPIO_PIN_12
 #define TS_CK_STM_GPIO_Port GPIOD
 #define SpareButton_STM_Pin GPIO_PIN_13
@@ -79,6 +79,8 @@ extern "C"
 #define TS_EX_STM_GPIO_Port GPIOC
 #define ASB_CMD_Pin GPIO_PIN_8
 #define ASB_CMD_GPIO_Port GPIOA
+#define PWM3_CMD_Pin GPIO_PIN_10
+#define PWM3_CMD_GPIO_Port GPIOC
 #define TSOFF_CMD_Pin GPIO_PIN_11
 #define TSOFF_CMD_GPIO_Port GPIOC
 #define RTD_CMD_Pin GPIO_PIN_12
@@ -109,6 +111,7 @@ extern "C"
 #define PWM_RAD_CH TIM_CHANNEL_1
 #define PWM_BP_TIM htim8
 #define PWM_BP_CH TIM_CHANNEL_1
+#define COUNTER_TIM htim3
 
     /* USER CODE END Private defines */
 

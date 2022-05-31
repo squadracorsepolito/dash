@@ -2,11 +2,9 @@
 #include "utils.h"
 
 /*Toggle a specific GPIO*/
-void LedBlinking(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, uint32_t period)
+void LedBlinking(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, uint32_t *last, uint32_t period)
 {
-    static uint32_t delay_100us_last = 0;
-
-    if (delay_fun(&delay_100us_last, period))
+    if (delay_fun(last, period))
     {
         HAL_GPIO_TogglePin(GPIOx, GPIO_Pin);
     }

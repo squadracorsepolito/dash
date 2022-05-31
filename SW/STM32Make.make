@@ -46,7 +46,6 @@ C_SOURCES =  \
 /home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_gpio.c \
 /home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_i2c.c \
 /home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_i2c_ex.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_iwdg.c \
 /home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_pwr.c \
 /home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_pwr_ex.c \
 /home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_rcc.c \
@@ -61,11 +60,9 @@ Core/Src/button.c \
 Core/Src/can.c \
 Core/Src/dashboard.c \
 Core/Src/gpio.c \
-Core/Src/iwdg.c \
 Core/Src/main.c \
 Core/Src/stm32f3xx_hal_msp.c \
 Core/Src/stm32f3xx_it.c \
-Core/Src/syscalls.c \
 Core/Src/system_stm32f3xx.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
@@ -77,7 +74,7 @@ CPP_SOURCES = \
 
 # ASM sources
 ASM_SOURCES =  \
-startup_stm32f303xc.s
+startup_stm32f303xe.s
 
 
 
@@ -112,10 +109,10 @@ BIN = $(CP) -O binary -S
 CPU = -mcpu=cortex-m4
 
 # fpu
-FPU = 
+FPU = -mfpu=fpv4-sp-d16
 
 # float-abi
-FLOAT-ABI = -mfloat-abi=soft
+FLOAT-ABI = -mfloat-abi=hard
 
 # mcu
 MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
@@ -126,13 +123,13 @@ AS_DEFS =
 
 # C defines
 C_DEFS =  \
--DSTM32F303xC \
+-DSTM32F303xE \
 -DUSE_HAL_DRIVER
 
 
 # CXX defines
 CXX_DEFS =  \
--DSTM32F303xC \
+-DSTM32F303xE \
 -DUSE_HAL_DRIVER
 
 
@@ -173,7 +170,7 @@ CXXFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32F303VCTx_FLASH.ld
+LDSCRIPT = STM32F303VETx_FLASH.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 

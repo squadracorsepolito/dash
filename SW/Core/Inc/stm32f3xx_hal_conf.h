@@ -51,7 +51,7 @@
 /*#define HAL_CRYP_MODULE_ENABLED   */
 /*#define HAL_DAC_MODULE_ENABLED   */
 /*#define HAL_I2S_MODULE_ENABLED   */
-#define HAL_IWDG_MODULE_ENABLED
+/*#define HAL_IWDG_MODULE_ENABLED   */
 /*#define HAL_LCD_MODULE_ENABLED   */
 /*#define HAL_LPTIM_MODULE_ENABLED   */
 /*#define HAL_RNG_MODULE_ENABLED   */
@@ -154,8 +154,8 @@
 #define  TICK_INT_PRIORITY            ((uint32_t)15)    /*!< tick interrupt priority (lowest by default)  */
 #define  USE_RTOS                     0
 #define  PREFETCH_ENABLE              1
-#define  INSTRUCTION_CACHE_ENABLE     0
-#define  DATA_CACHE_ENABLE            0
+#define  INSTRUCTION_CACHE_ENABLE     1
+#define  DATA_CACHE_ENABLE            1
 #define USE_SPI_CRC                     0U
 
 #define  USE_HAL_ADC_REGISTER_CALLBACKS         0U /* ADC register callback disabled       */

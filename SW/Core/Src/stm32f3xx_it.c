@@ -6,13 +6,12 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2022 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
@@ -32,7 +31,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
- 
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -57,6 +56,7 @@
 
 /* External variables --------------------------------------------------------*/
 extern CAN_HandleTypeDef hcan;
+extern TIM_HandleTypeDef htim3;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -73,7 +73,9 @@ void NMI_Handler(void)
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-
+  while (1)
+  {
+  }
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
@@ -198,21 +200,7 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles USB low priority or CAN_RX0 interrupts.
-  */
-void USB_LP_CAN_RX0_IRQHandler(void)
-{
-  /* USER CODE BEGIN USB_LP_CAN_RX0_IRQn 0 */
-
-  /* USER CODE END USB_LP_CAN_RX0_IRQn 0 */
-  HAL_CAN_IRQHandler(&hcan);
-  /* USER CODE BEGIN USB_LP_CAN_RX0_IRQn 1 */
-
-  /* USER CODE END USB_LP_CAN_RX0_IRQn 1 */
-}
-
-/**
-  * @brief This function handles CAN RX1 interrupt.
+  * @brief This function handles CAN_RX1 interrupt.
   */
 void CAN_RX1_IRQHandler(void)
 {
@@ -223,6 +211,34 @@ void CAN_RX1_IRQHandler(void)
   /* USER CODE BEGIN CAN_RX1_IRQn 1 */
 
   /* USER CODE END CAN_RX1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles CAN_SCE interrupt.
+  */
+void CAN_SCE_IRQHandler(void)
+{
+  /* USER CODE BEGIN CAN_SCE_IRQn 0 */
+
+  /* USER CODE END CAN_SCE_IRQn 0 */
+  HAL_CAN_IRQHandler(&hcan);
+  /* USER CODE BEGIN CAN_SCE_IRQn 1 */
+
+  /* USER CODE END CAN_SCE_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM3 global interrupt.
+  */
+void TIM3_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM3_IRQn 0 */
+
+  /* USER CODE END TIM3_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim3);
+  /* USER CODE BEGIN TIM3_IRQn 1 */
+
+  /* USER CODE END TIM3_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

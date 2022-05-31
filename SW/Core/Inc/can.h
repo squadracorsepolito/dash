@@ -22,17 +22,16 @@
 #define __CAN_H__
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-    /* USER CODE BEGIN Includes */
-    /* USER CODE END Includes */
+/* USER CODE BEGIN Includes */
+/* USER CODE END Includes */
 
-    extern CAN_HandleTypeDef hcan;
+extern CAN_HandleTypeDef hcan;
 
 /* USER CODE BEGIN Private defines */
 #define CHANGEME 0x69
@@ -49,16 +48,17 @@ extern "C"
 #define COUNTER_REPLY_ID_CAN 0x044
 #define SENSORBOARD_4_7_ID_CAN 0x11
 
-    /* USER CODE END Private defines */
+/* USER CODE END Private defines */
 
-    void MX_CAN_Init(void);
+void MX_CAN_Init(void);
 
-    /* USER CODE BEGIN Prototypes */
+/* USER CODE BEGIN Prototypes */
 
-    /* USER CODE END Prototypes */
+/* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* __CAN_H__ */
+
