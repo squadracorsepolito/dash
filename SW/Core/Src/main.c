@@ -49,9 +49,6 @@
 
 /* USER CODE BEGIN PV */
 
-/*Timers variables*/
-// TODO: wire up to a timer
-
 /*UART1 variabls*/
 char msg[80] = "";
 char value[60] = "";
@@ -79,9 +76,6 @@ uint8_t PWM_BP_FAN = 50;
 bool CTOR_EN_ACK = false;
 bool RTD_EN_ACK = false;
 bool REBOOT_FSM = false;
-
-/*Ping variable*/
-bool ping = false;
 
 uint16_t brake = 0;
 

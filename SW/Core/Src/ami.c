@@ -1,4 +1,9 @@
-
+/**
+ * @file ami.c
+ * @author Matteo Bonora (matteo.bonora@studenti.polito.it)
+ * @brief Handle the AMI (autonomous mission indicator) lights.
+ * @date 2022-05-08
+ */
 #include "ami.h"
 
 mission_t current_mission = MISSION_NO;

@@ -1,7 +1,23 @@
+/**
+ * @file utils.c
+ * @author Matteo Bonora (matteo.bonora@studenti.polito.it)
+ * @brief Small collection of useful functions
+ * @date 2022-05-26
+ */
 
 #include "utils.h"
 
-/*Toggle a specific GPIO*/
+// Like systick, but with a resolution of 100us
+uint32_t counter;
+
+/**
+ * @brief Blink a given pin at the specified frequency
+ *
+ * @param GPIOx GPIO bus of the pin
+ * @param GPIO_Pin Pin number
+ * @param last Last toggle time
+ * @param period Toggling period
+ */
 void LedBlinking(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, uint32_t *last, uint32_t period)
 {
     if (delay_fun(last, period))
@@ -10,25 +26,31 @@ void LedBlinking(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, uint32_t *last, uint32_
     }
 }
 
-/*Return true if the delay is completed, false otherwise*/
-int delay_fun(uint32_t *delay_100us_last, uint32_t delay_100us)
+/**
+ * @brief Returns true if a given time has passed
+ *
+ * @param delay_100us_last Starting time
+ * @param delay_100us Desired period
+ * @return true Period has elapsed
+ * @return false Period has not elapsed
+ */
+bool delay_fun(uint32_t *delay_100us_last, uint32_t delay_100us)
 {
-
     uint32_t current_time = ReturnTime_100us();
 
     if (current_time > *delay_100us_last && (current_time - *delay_100us_last) >= delay_100us)
     {
         *delay_100us_last = current_time;
-        return 1;
+        return true;
     }
-    else if (current_time < *delay_100us_last && (0xFFFFFFFF - current_time - *delay_100us_last) >= delay_100us)
+    else if (current_time < *delay_100us_last && (UINT32_MAX - current_time - *delay_100us_last) >= delay_100us)
     {
         *delay_100us_last = current_time;
-        return 1;
+        return true;
     }
     /*In case of timer overflow, the delay is computed correctly*/
 
-    return 0;
+    return false;
 }
 
 /*Return the value of the counter that is incremented every 100us*/

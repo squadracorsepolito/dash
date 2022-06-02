@@ -1,3 +1,9 @@
+/**
+ * @file button.c
+ * @author Matteo Bonora (matteo.bonora@studenti.polito.it)
+ * @brief Sample and debounce the input buttons
+ * @date 2022-04-30
+ */
 
 #include "button.h"
 #include "main.h"
@@ -6,9 +12,9 @@
 // Map GPIOs to button index
 const GPIO_TypeDef *button_gpio[BUTTON_COUNT] = {TS_CK_STM_GPIO_Port, TS_EX_STM_GPIO_Port, SpareButton_STM_GPIO_Port};
 const uint16_t button_pin[BUTTON_COUNT] = {TS_CK_STM_Pin, TS_EX_STM_Pin, SpareButton_STM_Pin};
-
 // State and last change time of each button
 bool state[BUTTON_COUNT] = {BUTTON_PRESSED, BUTTON_PRESSED, BUTTON_PRESSED};
+// Store the last time a button changed state
 uint32_t change_time[BUTTON_COUNT] = {0};
 
 void button_sample()

@@ -41,7 +41,6 @@ extern TIM_HandleTypeDef htim16;
 extern TIM_HandleTypeDef htim17;
 
 /* USER CODE BEGIN Private defines */
-    extern uint32_t counter;
 
 /* USER CODE END Private defines */
 

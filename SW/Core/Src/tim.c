@@ -21,7 +21,7 @@
 #include "tim.h"
 
 /* USER CODE BEGIN 0 */
-uint32_t counter = 0;
+extern uint32_t counter;
 /* USER CODE END 0 */
 
 TIM_HandleTypeDef htim3;
