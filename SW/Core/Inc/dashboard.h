@@ -26,13 +26,9 @@ typedef enum
 
 void SetupDashBoard(void);
 void CoreDashBoard(void);
-void CAN_Config(void);
-void CAN_Tx(void);
-void CAN_Msg_Send(CAN_HandleTypeDef *hcan, CAN_TxHeaderTypeDef *pHeader, uint8_t aData[], uint32_t *pTxMailbox, uint32_t TimeOut);
-void Debug_UART(int state);
+void can_send_state(uint32_t delay_100us);
 void UpdateCockpitLed(uint32_t delay_100us);
 void ReadyToDriveFSM(uint32_t delay_100us);
-void Debug_CAN_Tx(uint32_t delay_100us);
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan);
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan);

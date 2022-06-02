@@ -25,6 +25,7 @@ extern uint8_t RxData[8];
 /*Error Variables*/
 error_t error = ERROR_NONE;
 
+// TODO: what's this?
 extern bool ASB_ERR;
 extern bool BMS_ERR;
 extern bool NOHV;
@@ -59,45 +60,14 @@ extern bool RTD_EN_ACK;
 extern bool REBOOT_FSM;
 extern bool ASMS_ON;
 
-/*Ping variable*/
-extern bool ping;
-
 /*Front brake pressure value*/
 extern uint16_t brake;
 
 /*CUSTOM FUNCTIONS*/
 
-/*Setup can header and start peripheral*/
-/*
-APB1 = 30 MHz
-Periphelal clock = APB1/Prescaler = 30/3 = 10 Mhz
-
-Time Quanta = SJW (start_bit) + BS1 + BS2 = 8 + 1 + 1 = 10
-
-Periphelal Clock / Time Quanta = CAN bitrate -> 10Mhz/10 = 1Mbit/s
-
-or prescaler 6; Clock 30/6 = 5Mhz
-Time Quanta = 2 + 2 + 1
-*/
-void CAN_Config(void)
-{
-    if (HAL_CAN_Start(&hcan) != HAL_OK)
-    {
-        /* Start Error */
-        Error_Handler();
-    }
-    if (HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
-    {
-        /* Start Error */
-        Error_Handler();
-    }
-    /*Enable interrupt*/
-}
-
 /*Rx Message interrupt from CAN*/
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-
     if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
     {
         /* Transmission request Error */
@@ -110,11 +80,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     {
         NVIC_SystemReset();
     }
-    /*Ping command received*/
-    else if ((RxHeader.StdId == PING_ID_CAN) && (RxHeader.DLC == 2) && (RxData[0] == 0x00) && (RxData[1] == 0xFF))
-    {
-        ping = true;
-    }
     /*Received TLB error byte in order to turn LEDs on or off*/
     else if ((RxHeader.StdId == TLB_ERROR_ID_CAN) && (RxHeader.DLC == 1) && (RxData[0] < 16))
     {
@@ -123,8 +88,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
         IMD_ERR = (bool)(RxData[0] & 4);
         TLB_ERR_RECEIVED = true;
     }
-    else if ((RxHeader.StdId == AS_ERROR_ID_CAN) && (RxHeader.DLC == 1))
+    /* AS state */
+    else if ((RxHeader.StdId == AS_STATE_ID_CAN) && (RxHeader.DLC == 1))
     {
+        ASB_ERR = (bool)(RxData[0] & (1 << 7));
+
         switch (RxData[0])
         {
         case 0:
@@ -143,10 +111,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             as_state = AS_EMERGENCY;
             break;
         }
-    }
-    else if ((RxHeader.StdId == AS_STATE) && (RxHeader.DLC == 1))
-    {
-        ASB_ERR = (bool)(RxData[0] & 0b1);
     }
     /*Ready to drive ACK from DSPACE*/
     else if ((RxHeader.StdId == ACK_RTD_ID_CAN) && (RxHeader.DLC == 1))
@@ -167,7 +131,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     /*Set duty cycle*/
     else if ((RxHeader.StdId == PWM_ID_CAN) && (RxHeader.DLC == 3))
     {
-
         if (RxData[0] <= 100)
         {
             PWM_PUMP = RxData[0];
@@ -290,7 +253,6 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             break;
 
         case STATE_RTD_EN:
-            // if (HAL_GPIO_ReadPin(TS_CK_STM_GPIO_Port, TS_CK_STM_Pin) && (brake >= BRAKE_THRESHOLD))
             if ((button_get(BUTTON_TS_EX) && ASMS_ON) || (button_get(BUTTON_TS_CK) && !ASMS_ON))
             {
                 if (brake >= BRAKE_THRESHOLD)
@@ -300,12 +262,14 @@ void ReadyToDriveFSM(uint32_t delay_100us)
                 }
                 else
                 {
+                    // TODO: send error instead of locking up?
                     error = ERROR_BRAKE_PRESSURE;
                     rtd_fsm = STATE_ERROR;
                 }
             }
             if ((button_get(BUTTON_TS_EX) && !ASMS_ON) || (button_get(BUTTON_TS_CK) && ASMS_ON))
             {
+                // TODO: send error instead of locking up?
                 error = ERROR_ILLEGAL_RTD_BTN;
                 rtd_fsm = STATE_ERROR;
             }
@@ -436,8 +400,6 @@ void SetupDashBoard(void)
         Error_Handler();
     }
 
-    CAN_Config();
-
     sprintf(msg, "Dashboard 2022 Boot - build %s @ %s\n\r", __DATE__, __TIME__);
     HAL_UART_Transmit(&huart1, (uint8_t *)msg, 30, 20);
     memset(msg, 0, strlen(msg));
@@ -453,65 +415,8 @@ void SetupDashBoard(void)
     /*BootScreen with verion of the code and message of complete configuration*/
 }
 
-/*Send message to CAN BUS*/
-void CAN_Msg_Send(CAN_HandleTypeDef *hcan, CAN_TxHeaderTypeDef *pHeader, uint8_t aData[], uint32_t *pTxMailbox, uint32_t TimeOut)
-{
-
-    static uint32_t can_counter_100us = 0;
-    can_counter_100us = ReturnTime_100us();
-
-    while (HAL_CAN_GetTxMailboxesFreeLevel(hcan) < 1)
-    {
-
-        if (delay_fun(&can_counter_100us, TimeOut))
-        {
-
-            // Error_Handler();
-            HAL_CAN_ResetError(hcan);
-            HAL_CAN_AbortTxRequest(hcan, *pTxMailbox);
-        }
-    }
-
-    if (HAL_CAN_AddTxMessage(hcan, pHeader, aData, pTxMailbox) != HAL_OK)
-    {
-
-        /* Transmission request Error */
-        // Error_Handler();
-        HAL_CAN_ResetError(hcan);
-        HAL_CAN_AbortTxRequest(hcan, *pTxMailbox);
-    }
-}
-
-/*Send timer data to CAN BUS*/
-void CAN_Tx(void)
-{
-
-    /*Ping received, reply with 0x00FF using Bootloader's ID*/
-    if (ping)
-    {
-        ping = false;
-        TxHeader.StdId = BOOTLOADER_ID_CAN;
-        // TxHeader.ExtId = BOOTLOADER_ID_CAN;
-        TxHeader.RTR = CAN_RTR_DATA;
-        TxHeader.IDE = CAN_ID_STD;
-        TxHeader.DLC = 6;
-        TxHeader.TransmitGlobalTime = DISABLE;
-        TxData[0] = 0x46;
-        TxData[1] = rtd_fsm;
-        TxData[2] = (HAL_GPIO_ReadPin(GPIOB, AMS_CMD_Pin)) | (HAL_GPIO_ReadPin(GPIOE, TSOFF_CMD_Pin) << 1) | (HAL_GPIO_ReadPin(GPIOF, IMD_CMD_Pin) << 2);
-        TxData[3] = PWM_PUMP;
-        TxData[4] = PWM_RAD_FAN;
-        TxData[5] = PWM_BP_FAN;
-        CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
-    }
-}
-
-/*Print on uart */
-void Debug_UART(int state)
-{
-}
-
-void Debug_CAN_Tx(uint32_t delay_100us)
+/*Send status data to CAN BUS*/
+void can_send_state(uint32_t delay_100us)
 {
     static uint32_t delay_100us_last = 0;
 
@@ -525,7 +430,7 @@ void Debug_CAN_Tx(uint32_t delay_100us)
         TxHeader.TransmitGlobalTime = DISABLE;
         TxData[0] = 0x46;
         TxData[1] = rtd_fsm;
-        TxData[2] = (HAL_GPIO_ReadPin(GPIOB, AMS_CMD_Pin)) | (HAL_GPIO_ReadPin(GPIOE, TSOFF_CMD_Pin) << 1) | (HAL_GPIO_ReadPin(GPIOF, IMD_CMD_Pin) << 2);
+        TxData[2] = (HAL_GPIO_ReadPin(AMS_CMD_GPIO_Port, AMS_CMD_Pin)) | (HAL_GPIO_ReadPin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin) << 1) | (HAL_GPIO_ReadPin(IMD_CMD_GPIO_Port, IMD_CMD_Pin) << 2);
         TxData[3] = PWM_PUMP;
         TxData[4] = PWM_RAD_FAN;
         TxData[5] = PWM_BP_FAN;
@@ -538,24 +443,22 @@ void Debug_CAN_Tx(uint32_t delay_100us)
  */
 void CoreDashBoard(void)
 {
-    // Blink green led
+    // Blink green led to signal activity
     static uint32_t led_blink = 0;
     LedBlinking(LED2_GPIO_Port, LED2_Pin, &led_blink, 2000);
 
     // Update state Cockpit's LEDs
     UpdateCockpitLed(5000);
 
-    // Update button state
-    button_sample(BUTTON_SAMPLE_TIME_100us);
+    // Update buttons state
+    button_sample();
 
-    // Ready to drive FSM
+    // RUN the ready to drive FSM
     ReadyToDriveFSM(500);
 
+    // Run the AS FSM
     as_run();
 
-    // Send timer data via CAN
-    CAN_Tx();
-
-    // Send debug packet
-    Debug_CAN_Tx(500);
+    // Send current state via CAN
+    can_send_state(5000);
 }
