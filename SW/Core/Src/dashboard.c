@@ -128,6 +128,37 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             REBOOT_FSM = true;
         }
     }
+    /*Autonomous Mission Status*/
+    else if ((RxHeader.StdId == MISSION_STATUS_ID_CAN) && (RxHeader.DLC == 1))
+    {
+        switch (RxData[0])
+        {
+        case 0:
+            ami_set(MISSION_NO);
+            break;
+        case 1:
+            ami_set(MISSION_ACCEL);
+            break;
+        case 2:
+            ami_set(MISSION_SKIDPAD);
+            break;
+        case 3:
+            ami_set(MISSION_AUTOX);
+            break;
+        case 4:
+            ami_set(MISSION_TRACKDRIVE);
+            break;
+        case 5:
+            ami_set(MISSION_EBSTEST);
+            break;
+        case 6:
+            ami_set(MISSION_INSPECT);
+            break;
+        case 7:
+            ami_set(MISSION_MANUAL);
+            break;
+        }
+    }
     /*Set duty cycle*/
     else if ((RxHeader.StdId == PWM_ID_CAN) && (RxHeader.DLC == 3))
     {

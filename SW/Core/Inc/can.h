@@ -41,6 +41,7 @@ extern "C"
 #define PING_ID_CAN 0x146 // TODO: remove
 #define TLB_ERROR_ID_CAN 0x020
 #define AS_STATE_ID_CAN CHANGEME
+#define MISSION_STATUS_ID_CAN (CHANGEME + 1)
 #define ACK_RTD_ID_CAN 0x040
 #define PWM_ID_CAN 0x041
 #define CMD_RTD_ID_CAN 0x042
