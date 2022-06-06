@@ -61,23 +61,23 @@ uint8_t TxData[8] = {0};
 uint8_t RxData[8] = {0};
 
 /*Error Variables*/
-bool ASB_ERR = false;
-bool BMS_ERR = false;
-bool NOHV = false;
-bool IMD_ERR = false;
-bool TLB_ERR_RECEIVED = false;
+volatile bool ASB_ERR = false;
+volatile bool BMS_ERR = false;
+volatile bool NOHV = false;
+volatile bool IMD_ERR = false;
+volatile bool TLB_ERR_RECEIVED = false;
 
 /*PWM Variables*/
-uint8_t PWM_RAD_FAN = 50;
-uint8_t PWM_PUMP = 50;
-uint8_t PWM_BP_FAN = 50;
+volatile uint8_t PWM_RAD_FAN = 50;
+volatile uint8_t PWM_PUMP = 50;
+volatile uint8_t PWM_BP_FAN = 50;
 
 /*RTD variables*/
-bool CTOR_EN_ACK = false;
-bool RTD_EN_ACK = false;
-bool REBOOT_FSM = false;
+volatile bool CTOR_EN_ACK = false;
+volatile bool RTD_EN_ACK = false;
+volatile bool REBOOT_FSM = false;
 
-uint16_t brake = 0;
+volatile uint16_t brake_pressure = 0;
 
 /* USER CODE END PV */
 

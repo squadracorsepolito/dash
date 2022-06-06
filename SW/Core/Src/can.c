@@ -117,7 +117,7 @@ void MX_CAN_Init(void)
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
     sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
     sFilterConfig.FilterIdHigh = (CMD_COUNTER_REQUEST_ID_CAN << 5);
-    sFilterConfig.FilterIdLow = (CMD_COUNTER_REQUEST_ID_CAN << 5);
+    sFilterConfig.FilterIdLow = (CMD_EBS_ID_CAN << 5);
     sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
     sFilterConfig.FilterActivation = ENABLE;
     sFilterConfig.SlaveStartFilterBank = 14;

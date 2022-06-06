@@ -8,7 +8,7 @@
 #include "utils.h"
 
 // Like systick, but with a resolution of 100us
-uint32_t counter;
+volatile uint32_t counter;
 
 /**
  * @brief Blink a given pin at the specified frequency

@@ -31,6 +31,7 @@ extern bool BMS_ERR;
 extern bool NOHV;
 extern bool IMD_ERR;
 extern bool TLB_ERR_RECEIVED;
+
 bool ASMS_ON = false;
 
 /*PWM Variables*/
@@ -61,7 +62,7 @@ extern bool REBOOT_FSM;
 extern bool ASMS_ON;
 
 /*Front brake pressure value*/
-extern uint16_t brake;
+extern volatile uint16_t brake_pressure;
 
 /*CUSTOM FUNCTIONS*/
 
@@ -159,6 +160,12 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             break;
         }
     }
+    /*EBS commmand*/
+    else if ((RxHeader.StdId == CMD_EBS_ID_CAN) && (RxHeader.DLC == 1))
+    {
+        HAL_GPIO_WritePin(EBS_RELAY1_GPIO_Port, EBS_RELAY1_Pin, RxData[0] & 0b1);
+        HAL_GPIO_WritePin(EBS_RELAY2_GPIO_Port, EBS_RELAY2_Pin, RxData[0] >> 1);
+    }
     /*Set duty cycle*/
     else if ((RxHeader.StdId == PWM_ID_CAN) && (RxHeader.DLC == 3))
     {
@@ -180,7 +187,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     }
     else if ((RxHeader.StdId == SENSORBOARD_4_7_ID_CAN) && (RxHeader.DLC == 8))
     {
-        brake = ((RxData[6] << 8) | RxData[7]);
+        brake_pressure = ((RxData[6] << 8) | RxData[7]);
     }
 }
 
@@ -286,7 +293,7 @@ void ReadyToDriveFSM(uint32_t delay_100us)
         case STATE_RTD_EN:
             if ((button_get(BUTTON_TS_EX) && ASMS_ON) || (button_get(BUTTON_TS_CK) && !ASMS_ON))
             {
-                if (brake >= BRAKE_THRESHOLD)
+                if (brake_pressure >= BRAKE_THRESHOLD)
                 {
                     // CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
                     rtd_fsm = STATE_WAIT_RTD_EN_ACK;
