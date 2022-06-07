@@ -21,6 +21,7 @@ typedef enum
 extern bool ami_selected;
 
 void ami_setup();
+bool ami_is_selected();
 mission_t ami_get();
 void ami_set_mission(mission_t mission);
 void ami_run();

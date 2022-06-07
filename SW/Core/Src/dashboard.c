@@ -32,8 +32,6 @@ extern bool NOHV;
 extern bool IMD_ERR;
 extern bool TLB_ERR_RECEIVED;
 
-bool ASMS_ON = false;
-
 /*PWM Variables*/
 extern uint8_t PWM_RAD_FAN;
 extern uint8_t PWM_PUMP;
@@ -59,7 +57,6 @@ state rtd_fsm = STATE_INIT;
 extern bool CTOR_EN_ACK;
 extern bool RTD_EN_ACK;
 extern bool REBOOT_FSM;
-extern bool ASMS_ON;
 
 /*Front brake pressure value*/
 extern volatile uint16_t brake_pressure;
@@ -112,38 +109,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             as_state = AS_EMERGENCY;
             break;
         }
-    }
-    /*Autonomous Mission Status*/
-    else if ((RxHeader.StdId == MISSION_STATUS_ID_CAN) && (RxHeader.DLC == 1))
-    {
-        // ami_set_mission(RxData[0]);
-        //  switch (RxData[0])
-        //{
-        //  case 0:
-        //      ami_set(MISSION_SKIDPAD);
-        //      break;
-        //  case 1:
-        //      ami_set(MISSION_MANUAL);
-        //      break;
-        //  case 2:
-        //      ami_set(MISSION_TRACKDRIVE);
-        //      break;
-        //  case 3:
-        //      ami_set(MISSION_EBSTEST);
-        //      break;
-        //  case 4:
-        //      ami_set(MISSION_TRACKDRIVE);
-        //      break;
-        //  case 5:
-        //      ami_set(MISSION_EBSTEST);
-        //      break;
-        //  case 6:
-        //      ami_set(MISSION_INSPECT);
-        //      break;
-        //  case 7:
-        //      ami_set(MISSION_MANUAL);
-        //      break;
-        //  }
     }
     /*Ready to drive ACK from DSPACE*/
     else if ((RxHeader.StdId == ACK_RTD_ID_CAN) && (RxHeader.DLC == 1))
@@ -242,15 +207,9 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             rtd_fsm = STATE_IDLE;
             break;
         case STATE_IDLE:
-            if ((button_get(BUTTON_TS_EX) && ASMS_ON) || (button_get(BUTTON_TS_CK) && !ASMS_ON))
+            if (button_get(BUTTON_TS_EX) || button_get(BUTTON_TS_CK))
             {
                 rtd_fsm = STATE_CTOR_EN;
-            }
-            if ((button_get(BUTTON_TS_EX) && !ASMS_ON) || (button_get(BUTTON_TS_CK) && ASMS_ON))
-            {
-                // TODO: remove bypass
-                // error = ERROR_ILLEGAL_RTD_BTN;
-                // rtd_fsm = STATE_ERROR;
             }
             else
             {
@@ -307,7 +266,7 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             break;
 
         case STATE_RTD_EN:
-            if ((button_get(BUTTON_TS_EX) && ASMS_ON) || (button_get(BUTTON_TS_CK) && !ASMS_ON))
+            if (button_get(BUTTON_TS_EX) || button_get(BUTTON_TS_CK))
             {
                 if (brake_pressure >= BRAKE_THRESHOLD)
                 {
@@ -320,12 +279,6 @@ void ReadyToDriveFSM(uint32_t delay_100us)
                     error = ERROR_BRAKE_PRESSURE;
                     rtd_fsm = STATE_ERROR;
                 }
-            }
-            if ((button_get(BUTTON_TS_EX) && !ASMS_ON) || (button_get(BUTTON_TS_CK) && ASMS_ON))
-            {
-                // TODO: send error instead of locking up?
-                error = ERROR_ILLEGAL_RTD_BTN;
-                rtd_fsm = STATE_ERROR;
             }
             else if (REBOOT_FSM)
             {
@@ -486,10 +439,10 @@ void can_send_state(uint32_t delay_100us)
         TxHeader.TransmitGlobalTime = DISABLE;
         TxData[0] = 0x46;
         TxData[1] = rtd_fsm;
-        TxData[2] = (HAL_GPIO_ReadPin(AMS_CMD_GPIO_Port, AMS_CMD_Pin)) | (HAL_GPIO_ReadPin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin) << 1) | (HAL_GPIO_ReadPin(IMD_CMD_GPIO_Port, IMD_CMD_Pin) << 2) | (HAL_GPIO_ReadPin(IMD_CMD_GPIO_Port, IMD_CMD_Pin) << 3) | (HAL_GPIO_ReadPin(ASB_CMD_GPIO_Port, ASB_CMD_Pin) << 4);
-        TxData[3] = button_get(BUTTON_TS_EX);
-        TxData[4] = button_get(BUTTON_TS_CK);
-        TxData[5] = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
+        TxData[2] = ami_is_selected() ? MISSION_NO : ami_get();
+        TxData[3] = (HAL_GPIO_ReadPin(AMS_CMD_GPIO_Port, AMS_CMD_Pin)) | (HAL_GPIO_ReadPin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin) << 1) | (HAL_GPIO_ReadPin(IMD_CMD_GPIO_Port, IMD_CMD_Pin) << 2) | (HAL_GPIO_ReadPin(IMD_CMD_GPIO_Port, IMD_CMD_Pin) << 3) | (HAL_GPIO_ReadPin(ASB_CMD_GPIO_Port, ASB_CMD_Pin) << 4);
+        TxData[4] = button_get(BUTTON_TS_EX);
+        TxData[5] = button_get(BUTTON_TS_CK);
         CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
     }
 }

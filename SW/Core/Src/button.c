@@ -79,7 +79,7 @@ void button_sample()
 }
 
 /**
- * @brief Returns the logical state of the button
+ * @brief Returns the de-bounced logical state of the button
  *
  * @param btn button index
  * @return true if button is PRESSED
@@ -87,7 +87,7 @@ void button_sample()
  */
 bool button_get(button btn)
 {
-    return state[btn] == BUTTON_PRESSED;
+    return state[btn] == BUTTON_PRESSED && ReturnTime_100us() - press_time[btn] >= BUTTON_SHORT_PRESS_TIME_100us;
 }
 
 void button_set_shortpress(button btn, func_type function)

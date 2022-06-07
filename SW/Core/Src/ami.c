@@ -18,6 +18,11 @@ void ami_select()
     ami_selected = true;
 }
 
+bool ami_is_selected()
+{
+    return ami_selected;
+}
+
 void ami_increment()
 {
     if (!ami_selected)
