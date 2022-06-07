@@ -2,19 +2,25 @@
 
 #include "main.h"
 #include <inttypes.h>
+#include <stdbool.h>
 
 typedef enum
 {
-    MISSION_NO = 0,
-    MISSION_ACCEL = 1,
-    MISSION_SKIDPAD = 2,
-    MISSION_AUTOX = 3,
-    MISSION_TRACKDRIVE = 4,
-    MISSION_EBSTEST = 5,
-    MISSION_INSPECT = 6,
-    MISSION_MANUAL = 7,
+    MISSION_ACCEL = 0,
+    MISSION_SKIDPAD = 1,
+    MISSION_AUTOX = 2,
+    MISSION_TRACKDRIVE = 3,
+    MISSION_EBSTEST = 4,
+    MISSION_INSPECT = 5,
+    MISSION_MANUAL = 6,
+    MISSION_NO = 7,
+
+    NUM_MISSIONS
 } mission_t;
 
-mission_t ami_get();
+extern bool ami_selected;
 
-void ami_set(mission_t mission);
+void ami_setup();
+mission_t ami_get();
+void ami_set_mission(mission_t mission);
+void ami_run();

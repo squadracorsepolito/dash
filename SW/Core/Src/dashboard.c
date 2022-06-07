@@ -72,8 +72,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
     {
         /* Transmission request Error */
-        // HAL_CAN_ResetError(hcan);
-        // Error_Handler();
+        HAL_CAN_ResetError(hcan);
+        Error_Handler();
     }
 
     /*Reboot Board - Received command byte from CAN*/
@@ -96,22 +96,54 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
         switch (RxData[0])
         {
-        case 0:
+        case 1:
             as_state = AS_OFF;
             break;
-        case 1:
+        case 2:
             as_state = AS_READY;
             break;
-        case 2:
+        case 3:
             as_state = AS_DRIVING;
             break;
-        case 3:
+        case 4:
             as_state = AS_FINISHED;
             break;
-        case 4:
+        case 5:
             as_state = AS_EMERGENCY;
             break;
         }
+    }
+    /*Autonomous Mission Status*/
+    else if ((RxHeader.StdId == MISSION_STATUS_ID_CAN) && (RxHeader.DLC == 1))
+    {
+        // ami_set_mission(RxData[0]);
+        //  switch (RxData[0])
+        //{
+        //  case 0:
+        //      ami_set(MISSION_SKIDPAD);
+        //      break;
+        //  case 1:
+        //      ami_set(MISSION_MANUAL);
+        //      break;
+        //  case 2:
+        //      ami_set(MISSION_TRACKDRIVE);
+        //      break;
+        //  case 3:
+        //      ami_set(MISSION_EBSTEST);
+        //      break;
+        //  case 4:
+        //      ami_set(MISSION_TRACKDRIVE);
+        //      break;
+        //  case 5:
+        //      ami_set(MISSION_EBSTEST);
+        //      break;
+        //  case 6:
+        //      ami_set(MISSION_INSPECT);
+        //      break;
+        //  case 7:
+        //      ami_set(MISSION_MANUAL);
+        //      break;
+        //  }
     }
     /*Ready to drive ACK from DSPACE*/
     else if ((RxHeader.StdId == ACK_RTD_ID_CAN) && (RxHeader.DLC == 1))
@@ -127,37 +159,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
         else if ((RxData[0] == 3))
         {
             REBOOT_FSM = true;
-        }
-    }
-    /*Autonomous Mission Status*/
-    else if ((RxHeader.StdId == MISSION_STATUS_ID_CAN) && (RxHeader.DLC == 1))
-    {
-        switch (RxData[0])
-        {
-        case 0:
-            ami_set(MISSION_NO);
-            break;
-        case 1:
-            ami_set(MISSION_ACCEL);
-            break;
-        case 2:
-            ami_set(MISSION_SKIDPAD);
-            break;
-        case 3:
-            ami_set(MISSION_AUTOX);
-            break;
-        case 4:
-            ami_set(MISSION_TRACKDRIVE);
-            break;
-        case 5:
-            ami_set(MISSION_EBSTEST);
-            break;
-        case 6:
-            ami_set(MISSION_INSPECT);
-            break;
-        case 7:
-            ami_set(MISSION_MANUAL);
-            break;
         }
     }
     /*EBS commmand*/
@@ -195,7 +196,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 void ReadyToDriveFSM(uint32_t delay_100us)
 {
     // Set first delay back to give time for the buttons to debounce
-    static uint32_t delay_100us_last = -BUTTON_DEBOUNCE_TIME_100us * 2;
+    static uint32_t delay_100us_last = 0;
 
     if (delay_fun(&delay_100us_last, delay_100us))
     {
@@ -209,18 +210,32 @@ void ReadyToDriveFSM(uint32_t delay_100us)
 
             // Turn on all LEDs
             HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(ASB_CMD_GPIO_Port, ASB_CMD_Pin, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(AMS_CMD_GPIO_Port, AMS_CMD_Pin, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(IMD_CMD_GPIO_Port, IMD_CMD_Pin, GPIO_PIN_SET);
+
+            HAL_GPIO_WritePin(ASSI_BLUE_CMD_GPIO_Port, ASSI_BLUE_CMD_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(ASSI_YELLOW_CMD_GPIO_Port, ASSI_YELLOW_CMD_Pin, GPIO_PIN_RESET);
+            // HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_RESET);
+            // HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, GPIO_PIN_SET);
+            //  ami_set_mission(MISSION_MANUAL);
+            HAL_Delay(1000);
             HAL_GPIO_WritePin(ASSI_BLUE_CMD_GPIO_Port, ASSI_BLUE_CMD_Pin, GPIO_PIN_SET);
             HAL_GPIO_WritePin(ASSI_YELLOW_CMD_GPIO_Port, ASSI_YELLOW_CMD_Pin, GPIO_PIN_SET);
-            ami_set(MISSION_NO);
+            HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, GPIO_PIN_RESET);
+
+            // ami_set_mission(MISSION_NO);
 
             // Test input states
-            if (button_get(BUTTON_TS_CK) ||
-                button_get(BUTTON_TS_EX) ||
-                button_get(BUTTON_Spare))
-            {
-                error = ERROR_INIT_BTN;
-                rtd_fsm = STATE_ERROR;
-            }
+            // if (button_get(BUTTON_TS_CK) ||
+            //    button_get(BUTTON_TS_EX) ||
+            //    button_get(BUTTON_Spare))
+            //{
+            //    error = ERROR_INIT_BTN;
+            //    rtd_fsm = STATE_ERROR;
+            //}
 
             // TODO: Check CAN messages
 
@@ -233,8 +248,9 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             }
             if ((button_get(BUTTON_TS_EX) && !ASMS_ON) || (button_get(BUTTON_TS_CK) && ASMS_ON))
             {
-                error = ERROR_ILLEGAL_RTD_BTN;
-                rtd_fsm = STATE_ERROR;
+                // TODO: remove bypass
+                // error = ERROR_ILLEGAL_RTD_BTN;
+                // rtd_fsm = STATE_ERROR;
             }
             else
             {
@@ -438,6 +454,8 @@ void SetupDashBoard(void)
         Error_Handler();
     }
 
+    ami_setup();
+
     sprintf(msg, "Dashboard 2022 Boot - build %s @ %s\n\r", __DATE__, __TIME__);
     HAL_UART_Transmit(&huart1, (uint8_t *)msg, 30, 20);
     memset(msg, 0, strlen(msg));
@@ -468,10 +486,10 @@ void can_send_state(uint32_t delay_100us)
         TxHeader.TransmitGlobalTime = DISABLE;
         TxData[0] = 0x46;
         TxData[1] = rtd_fsm;
-        TxData[2] = (HAL_GPIO_ReadPin(AMS_CMD_GPIO_Port, AMS_CMD_Pin)) | (HAL_GPIO_ReadPin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin) << 1) | (HAL_GPIO_ReadPin(IMD_CMD_GPIO_Port, IMD_CMD_Pin) << 2);
-        TxData[3] = PWM_PUMP;
-        TxData[4] = PWM_RAD_FAN;
-        TxData[5] = PWM_BP_FAN;
+        TxData[2] = (HAL_GPIO_ReadPin(AMS_CMD_GPIO_Port, AMS_CMD_Pin)) | (HAL_GPIO_ReadPin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin) << 1) | (HAL_GPIO_ReadPin(IMD_CMD_GPIO_Port, IMD_CMD_Pin) << 2) | (HAL_GPIO_ReadPin(IMD_CMD_GPIO_Port, IMD_CMD_Pin) << 3) | (HAL_GPIO_ReadPin(ASB_CMD_GPIO_Port, ASB_CMD_Pin) << 4);
+        TxData[3] = button_get(BUTTON_TS_EX);
+        TxData[4] = button_get(BUTTON_TS_CK);
+        TxData[5] = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
         CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
     }
 }
@@ -495,8 +513,9 @@ void CoreDashBoard(void)
     ReadyToDriveFSM(500);
 
     // Run the AS FSM
+    ami_run();
     as_run();
 
     // Send current state via CAN
-    can_send_state(5000);
+    can_send_state(500);
 }
