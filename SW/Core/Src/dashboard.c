@@ -1,10 +1,10 @@
 /*INCLUDE*/
 
 #include "dashboard.h"
-#include "ami.h"
 #include "as_fsm.h"
 #include "button.h"
 #include "can.h"
+#include "mission.h"
 #include "tim.h"
 #include "usart.h"
 #include "utils.h"
@@ -182,16 +182,11 @@ void ReadyToDriveFSM(uint32_t delay_100us)
 
             HAL_GPIO_WritePin(ASSI_BLUE_CMD_GPIO_Port, ASSI_BLUE_CMD_Pin, GPIO_PIN_RESET);
             HAL_GPIO_WritePin(ASSI_YELLOW_CMD_GPIO_Port, ASSI_YELLOW_CMD_Pin, GPIO_PIN_RESET);
-            // HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_RESET);
-            // HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, GPIO_PIN_SET);
-            //  ami_set_mission(MISSION_MANUAL);
             HAL_Delay(1000);
             HAL_GPIO_WritePin(ASSI_BLUE_CMD_GPIO_Port, ASSI_BLUE_CMD_Pin, GPIO_PIN_SET);
             HAL_GPIO_WritePin(ASSI_YELLOW_CMD_GPIO_Port, ASSI_YELLOW_CMD_Pin, GPIO_PIN_SET);
             HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_RESET);
             HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, GPIO_PIN_RESET);
-
-            // ami_set_mission(MISSION_NO);
 
             // Test input states
             // if (button_get(BUTTON_TS_CK) ||
@@ -407,7 +402,7 @@ void SetupDashBoard(void)
         Error_Handler();
     }
 
-    ami_setup();
+    mission_setup();
 
     sprintf(msg, "Dashboard 2022 Boot - build %s @ %s\n\r", __DATE__, __TIME__);
     HAL_UART_Transmit(&huart1, (uint8_t *)msg, 30, 20);
@@ -439,7 +434,7 @@ void can_send_state(uint32_t delay_100us)
         TxHeader.TransmitGlobalTime = DISABLE;
         TxData[0] = 0x46;
         TxData[1] = rtd_fsm;
-        TxData[2] = ami_is_selected() ? MISSION_NO : ami_get();
+        TxData[2] = mission_is_confirmed() ? MISSION_NO : mission_get();
         TxData[3] = (HAL_GPIO_ReadPin(AMS_CMD_GPIO_Port, AMS_CMD_Pin)) | (HAL_GPIO_ReadPin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin) << 1) | (HAL_GPIO_ReadPin(IMD_CMD_GPIO_Port, IMD_CMD_Pin) << 2) | (HAL_GPIO_ReadPin(IMD_CMD_GPIO_Port, IMD_CMD_Pin) << 3) | (HAL_GPIO_ReadPin(ASB_CMD_GPIO_Port, ASB_CMD_Pin) << 4);
         TxData[4] = button_get(BUTTON_TS_EX);
         TxData[5] = button_get(BUTTON_TS_CK);
@@ -466,7 +461,7 @@ void CoreDashBoard(void)
     ReadyToDriveFSM(500);
 
     // Run the AS FSM
-    ami_run();
+    mission_run();
     as_run();
 
     // Send current state via CAN
