@@ -6,14 +6,14 @@
 
 // Maps logic values for missions to hardware indexes for the multiplexer
 static const uint8_t ami_mapping[NUM_MISSIONS] = {
-    [MISSION_ACCEL] = 7,
-    [MISSION_SKIDPAD] = 1,
-    [MISSION_AUTOX] = 2,
-    [MISSION_TRACKDRIVE] = 3,
-    [MISSION_EBSTEST] = 4,
-    [MISSION_INSPECT] = 5,
-    [MISSION_MANUAL] = 6,
-    [MISSION_NO] = 0};
+    [MISSION_ACCEL] = 1,
+    [MISSION_SKIDPAD] = 0,
+    [MISSION_AUTOX] = 5,
+    [MISSION_TRACKDRIVE] = 4,
+    [MISSION_EBSTEST] = 6,
+    [MISSION_INSPECT] = 3,
+    [MISSION_MANUAL] = 2,
+    [MISSION_NO] = 7};
 
 static bool confirmed = false;
 static mission_t current_mission = MISSION_NO;
