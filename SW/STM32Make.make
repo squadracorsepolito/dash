@@ -57,6 +57,7 @@ C_SOURCES =  \
 Core/Src/as_fsm.c \
 Core/Src/button.c \
 Core/Src/can.c \
+Core/Src/can_watchdog.c \
 Core/Src/dashboard.c \
 Core/Src/gpio.c \
 Core/Src/main.c \

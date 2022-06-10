@@ -192,7 +192,7 @@ clean:
 convert:
 	bin2srec -a 0x8004000 -i $(BUILD_DIR)/$(TARGET).bin -o $(BUILD_DIR)/$(TARGET).srec
 
-canflash: all convert
+canflash: convert
 	cansend can0 004#FF00
 	bootcommander -t=xcp_can -d=can0 -b=1000000 -tid=772 -rid=770 $(BUILD_DIR)/$(TARGET).srec
 

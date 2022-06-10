@@ -11,12 +11,12 @@
 #define ON 1
 #define OFF 0
 #define BRAKE_THRESHOLD 500
-#define DASH_STATUS 0x45
 #define DEBUG
 
 typedef enum
 {
     ERROR_NONE = 0,
+    ERROR_CAN_WDG,
     ERROR_INIT_BTN,
     ERROR_ILLEGAL_RTD_BTN,
     ERROR_BRAKE_PRESSURE

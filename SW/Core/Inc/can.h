@@ -22,45 +22,51 @@
 #define __CAN_H__
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-/* USER CODE BEGIN Includes */
-/* USER CODE END Includes */
+    /* USER CODE BEGIN Includes */
+    /* USER CODE END Includes */
 
-extern CAN_HandleTypeDef hcan;
+    extern CAN_HandleTypeDef hcan;
 
 /* USER CODE BEGIN Private defines */
 #define CHANGEME 0x69
 
+// Receive
 #define BOOTLOADER_ID_CAN 0x004
 #define PING_ID_CAN 0x146 // TODO: remove
 #define TLB_ERROR_ID_CAN 0x020
 #define AS_STATE_ID_CAN CHANGEME
-#define MISSION_STATUS_ID_CAN 0x70 // TODO: change me
 #define CMD_EBS_ID_CAN 0x71
 #define ACK_RTD_ID_CAN 0x040
 #define PWM_ID_CAN 0x041
-#define CMD_RTD_ID_CAN 0x042
+
+// Send
+#define MISSION_STATUS_ID_CAN 0x70 // TODO: change me
+#define DASH_RTD_ID_CAN 0x042
+#define DASH_ERR_ID_CAN 0x046
+#define DASH_STATUS_ID_CAN 0x45
+
 #define CMD_COUNTER_REQUEST_ID_CAN 0x043
 #define COUNTER_REPLY_ID_CAN 0x044
 #define SENSORBOARD_4_7_ID_CAN 0x11
 
-/* USER CODE END Private defines */
+    /* USER CODE END Private defines */
 
-void MX_CAN_Init(void);
+    void MX_CAN_Init(void);
 
-/* USER CODE BEGIN Prototypes */
+    /* USER CODE BEGIN Prototypes */
     void CAN_Msg_Send(CAN_HandleTypeDef *hcan, CAN_TxHeaderTypeDef *pHeader, uint8_t aData[], uint32_t *pTxMailbox, uint32_t TimeOut);
 
-/* USER CODE END Prototypes */
+    /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* __CAN_H__ */
-
