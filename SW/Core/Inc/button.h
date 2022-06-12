@@ -4,16 +4,16 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#define BUTTON_COUNT 3
-#define BUTTON_SAMPLE_TIME_100us 100
-#define BUTTON_SHORT_PRESS_TIME_100us (BUTTON_SAMPLE_TIME_100us * 10)
-#define BUTTON_LONG_PRESS_TIME_100us 10000
+#define BUTTON_SAMPLE_TIME_100us 300
+#define BUTTON_SHORT_PRESS_TIME_100us 1000
+#define BUTTON_LONG_PRESS_TIME_100us 8000
 
 typedef enum
 {
     BUTTON_TS_CK = 0,
-    BUTTON_TS_EX = 1,
-    BUTTON_Spare = 2
+    BUTTON_TS_EX,
+    BUTTON_MISSION,
+    BUTTON_COUNT
 } button;
 
 typedef enum

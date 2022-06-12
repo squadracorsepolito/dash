@@ -5,6 +5,7 @@
 #define PERIOD_2HZ_100us 2500 // Duty cycle time to get 2Hz (toggle at 4Hz)
 
 // Maps logic values for missions to hardware indexes for the multiplexer
+// TODO: check correctness
 static const uint8_t ami_mapping[NUM_MISSIONS] = {
     [MISSION_ACCEL] = 1,
     [MISSION_SKIDPAD] = 0,
@@ -20,7 +21,8 @@ static mission_t current_mission = MISSION_NO;
 
 void ami_confirm()
 {
-    confirmed = true;
+    if (mission_get() != MISSION_NO)
+        confirmed = true;
 }
 
 bool mission_is_confirmed()
@@ -32,14 +34,14 @@ void ami_mission_increment()
 {
     if (!confirmed)
     {
-        mission_set((mission_get() + 1) % NUM_MISSIONS);
+        mission_set((mission_get() + 1) % (NUM_MISSIONS - 1));
     }
 }
 
 void mission_setup()
 {
-    button_set_longpress(BUTTON_Spare, ami_confirm);
-    button_set_shortpress(BUTTON_Spare, ami_mission_increment);
+    button_set_longpress(BUTTON_MISSION, ami_confirm);
+    button_set_shortpress(BUTTON_MISSION, ami_mission_increment);
 }
 
 mission_t mission_get()

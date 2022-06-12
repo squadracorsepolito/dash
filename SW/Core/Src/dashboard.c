@@ -444,7 +444,7 @@ void can_send_state(uint32_t delay_100us)
         TxHeader.StdId = DASH_STATUS_ID_CAN;
         TxHeader.RTR = CAN_RTR_DATA;
         TxHeader.IDE = CAN_ID_STD;
-        TxHeader.DLC = 6;
+        TxHeader.DLC = 5;
         TxHeader.TransmitGlobalTime = DISABLE;
         TxData[0] = 0x46;
         TxData[1] = rtd_fsm;
@@ -454,8 +454,8 @@ void can_send_state(uint32_t delay_100us)
                     (HAL_GPIO_ReadPin(IMD_CMD_GPIO_Port, IMD_CMD_Pin) << 2) |
                     (HAL_GPIO_ReadPin(IMD_CMD_GPIO_Port, IMD_CMD_Pin) << 3) |
                     (HAL_GPIO_ReadPin(ASB_CMD_GPIO_Port, ASB_CMD_Pin) << 4);
-        TxData[4] = button_get(BUTTON_TS_EX);
-        TxData[5] = button_get(BUTTON_TS_CK);
+        TxData[4] = button_get(BUTTON_TS_CK) | button_get(BUTTON_TS_EX) | button_get(BUTTON_MISSION);
+
         CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
     }
 }
@@ -485,10 +485,10 @@ void CoreDashBoard(void)
     // Send current state via CAN
     can_send_state(500);
 
-    boards_timeouts = wdg_check();
-    if (boards_timeouts != 0)
-    {
-        error = ERROR_CAN_WDG;
-        rtd_fsm = STATE_ERROR;
-    }
+    // boards_timeouts = wdg_check();
+    // if (boards_timeouts != 0)
+    //{
+    //     error = ERROR_CAN_WDG;
+    //     rtd_fsm = STATE_ERROR;
+    // }
 }

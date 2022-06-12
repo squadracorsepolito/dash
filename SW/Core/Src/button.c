@@ -10,15 +10,16 @@
 #include "utils.h"
 
 // Map GPIOs to button index
-const GPIO_TypeDef *button_gpio[BUTTON_COUNT] = {TS_CK_STM_GPIO_Port, TS_EX_STM_GPIO_Port, SpareButton_STM_GPIO_Port};
-const uint16_t button_pin[BUTTON_COUNT] = {TS_CK_STM_Pin, TS_EX_STM_Pin, SpareButton_STM_Pin};
+const GPIO_TypeDef *button_gpio[BUTTON_COUNT] = {TS_CK_BTN_GPIO_Port, TS_EX_BTN_GPIO_Port, MISSION_BTN_GPIO_Port};
+const uint16_t button_pin[BUTTON_COUNT] = {TS_CK_BTN_Pin, TS_EX_BTN_Pin, MISSION_BTN_Pin};
+
 // State and last change time of each button
 button_state state[BUTTON_COUNT] = {BUTTON_RELEASED, BUTTON_RELEASED, BUTTON_RELEASED};
-
-// Store the last time a button changed state
+// The last time a button changed state
 uint32_t press_time[BUTTON_COUNT] = {0};
 uint32_t release_time[BUTTON_COUNT] = {0};
 
+// Callback functions to call on short and long-press events
 func_type spress_func[BUTTON_COUNT] = {NULL};
 func_type lpress_func[BUTTON_COUNT] = {NULL};
 
@@ -87,7 +88,7 @@ void button_sample()
  */
 bool button_get(button btn)
 {
-    return state[btn] == BUTTON_PRESSED && ReturnTime_100us() - press_time[btn] >= BUTTON_SHORT_PRESS_TIME_100us;
+    return state[btn] != BUTTON_RELEASED && ReturnTime_100us() - press_time[btn] >= BUTTON_SHORT_PRESS_TIME_100us;
 }
 
 void button_set_shortpress(button btn, func_type function)

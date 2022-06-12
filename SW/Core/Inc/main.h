@@ -62,10 +62,10 @@ void Error_Handler(void);
 #define EBS_RELAY1_GPIO_Port GPIOD
 #define EBS_RELAY2_Pin GPIO_PIN_11
 #define EBS_RELAY2_GPIO_Port GPIOD
-#define TS_CK_STM_Pin GPIO_PIN_12
-#define TS_CK_STM_GPIO_Port GPIOD
-#define SpareButton_STM_Pin GPIO_PIN_13
-#define SpareButton_STM_GPIO_Port GPIOD
+#define TS_CK_BTN_Pin GPIO_PIN_12
+#define TS_CK_BTN_GPIO_Port GPIOD
+#define MISSION_BTN_Pin GPIO_PIN_13
+#define MISSION_BTN_GPIO_Port GPIOD
 #define BUZZERAS_CMD_Pin GPIO_PIN_14
 #define BUZZERAS_CMD_GPIO_Port GPIOD
 #define RTD_CMD_Pin GPIO_PIN_6
@@ -74,8 +74,8 @@ void Error_Handler(void);
 #define BUZZEREV_CMD_GPIO_Port GPIOC
 #define AMS_CMD_Pin GPIO_PIN_8
 #define AMS_CMD_GPIO_Port GPIOC
-#define TS_EX_STM_Pin GPIO_PIN_9
-#define TS_EX_STM_GPIO_Port GPIOC
+#define TS_EX_BTN_Pin GPIO_PIN_9
+#define TS_EX_BTN_GPIO_Port GPIOC
 #define IMD_CMD_Pin GPIO_PIN_8
 #define IMD_CMD_GPIO_Port GPIOA
 #define AMI_OFF_CMD_Pin GPIO_PIN_10
