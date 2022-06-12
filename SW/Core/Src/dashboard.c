@@ -170,38 +170,72 @@ void ReadyToDriveFSM(uint32_t delay_100us)
         switch (rtd_fsm)
         {
         case STATE_INIT:
-            HAL_GPIO_WritePin(EBS_RELAY1_GPIO_Port, EBS_RELAY1_Pin, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(EBS_RELAY2_GPIO_Port, EBS_RELAY2_Pin, GPIO_PIN_RESET);
+        {
+            static uint8_t substate = 0;
+            static uint32_t last = 0;
 
-            // Turn on all LEDs
-            HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(ASB_CMD_GPIO_Port, ASB_CMD_Pin, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(AMS_CMD_GPIO_Port, AMS_CMD_Pin, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(IMD_CMD_GPIO_Port, IMD_CMD_Pin, GPIO_PIN_SET);
+            // Micro state machine to handle sleeps
+            switch (substate)
+            {
+            case 0:
+                HAL_GPIO_WritePin(EBS_RELAY1_GPIO_Port, EBS_RELAY1_Pin, GPIO_PIN_RESET);
+                HAL_GPIO_WritePin(EBS_RELAY2_GPIO_Port, EBS_RELAY2_Pin, GPIO_PIN_RESET);
 
-            HAL_GPIO_WritePin(ASSI_BLUE_CMD_GPIO_Port, ASSI_BLUE_CMD_Pin, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(ASSI_YELLOW_CMD_GPIO_Port, ASSI_YELLOW_CMD_Pin, GPIO_PIN_RESET);
-            HAL_Delay(900);
-            HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, GPIO_PIN_SET);
-            HAL_Delay(100);
-            HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, GPIO_PIN_RESET);
+                // Turn on all LEDs
+                HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, GPIO_PIN_SET);
+                HAL_GPIO_WritePin(ASB_CMD_GPIO_Port, ASB_CMD_Pin, GPIO_PIN_SET);
+                HAL_GPIO_WritePin(AMS_CMD_GPIO_Port, AMS_CMD_Pin, GPIO_PIN_SET);
+                HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, GPIO_PIN_SET);
+                HAL_GPIO_WritePin(IMD_CMD_GPIO_Port, IMD_CMD_Pin, GPIO_PIN_SET);
 
-            // Test input states
-            // if (button_get(BUTTON_TS_CK)BUZZER ||
-            //    button_get(BUTTON_TS_EX) ||
-            //    button_get(BUTTON_Spare))
-            //{
-            //    error = ERROR_INIT_BTN;
-            //    rtd_fsm = STATE_ERROR;
-            //}
+                as_state = AS_TEST;
 
-            // TODO: Check CAN messages
+                if (ReturnTime_100us() - last >= 8000)
+                {
+                    last = ReturnTime_100us();
+                    substate++;
+                };
+                break;
 
-            rtd_fsm = STATE_IDLE;
-            break;
+            case 1:
+                // Beep!
+                HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_SET);
+
+                if (ReturnTime_100us() - last >= 1000)
+                {
+                    last = ReturnTime_100us();
+                    substate++;
+                };
+                break;
+            case 2:
+                HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_RESET);
+                HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, GPIO_PIN_SET);
+
+                if (ReturnTime_100us() - last >= 1000)
+                {
+                    last = ReturnTime_100us();
+                    substate++;
+                };
+                break;
+            case 3:
+                HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, GPIO_PIN_RESET);
+
+                // Test input states
+                if (button_get(BUTTON_TS_CK) ||
+                    button_get(BUTTON_TS_EX) ||
+                    button_get(BUTTON_MISSION))
+                {
+                    error = ERROR_INIT_BTN;
+                    rtd_fsm = STATE_ERROR;
+                }
+
+                as_state = AS_OFF;
+                substate = 0;
+                rtd_fsm = STATE_IDLE;
+                break;
+            }
+        }
+        break;
         case STATE_IDLE:
             if (button_get(BUTTON_TS_EX) || button_get(BUTTON_TS_CK))
             {

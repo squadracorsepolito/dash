@@ -6,7 +6,8 @@ typedef enum
     AS_READY,
     AS_DRIVING,
     AS_FINISHED,
-    AS_EMERGENCY
+    AS_EMERGENCY,
+    AS_TEST
 } as_state_t;
 
 extern as_state_t as_state;

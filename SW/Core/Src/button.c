@@ -64,17 +64,6 @@ void button_sample()
 
                 break;
             }
-
-            if ((state[i] == BUTTON_RELEASED) && ((button_state)HAL_GPIO_ReadPin((GPIO_TypeDef *)button_gpio[i], button_pin[i]) == BUTTON_PRESSED))
-            {
-                state[i] = BUTTON_PRESSED;
-                press_time[i] = ReturnTime_100us();
-            }
-            else if ((state[i] == BUTTON_PRESSED) && !((button_state)HAL_GPIO_ReadPin((GPIO_TypeDef *)button_gpio[i], button_pin[i]) == BUTTON_PRESSED))
-            {
-                state[i] = BUTTON_RELEASED;
-                release_time[i] = ReturnTime_100us();
-            }
         }
     }
 }
