@@ -18,7 +18,6 @@ typedef enum
     ERROR_NONE = 0,
     ERROR_CAN_WDG,
     ERROR_INIT_BTN,
-    ERROR_ILLEGAL_RTD_BTN,
     ERROR_BRAKE_PRESSURE
 } error_t;
 

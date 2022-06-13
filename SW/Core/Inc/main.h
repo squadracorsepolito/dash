@@ -106,12 +106,15 @@ void Error_Handler(void);
 #define PWM2_CMD_GPIO_Port GPIOE
 /* USER CODE BEGIN Private defines */
 
-#define PWM_PUMP_TIM htim16
-#define PWM_PUMP_CH TIM_CHANNEL_1
-#define PWM_RAD_TIM htim17
-#define PWM_RAD_CH TIM_CHANNEL_1
-#define PWM_BP_TIM htim8
-#define PWM_BP_CH TIM_CHANNEL_1
+#define BAT_FAN_PWM_TIM htim16
+#define BAT_FAN_PWM_CH TIM_CHANNEL_1
+
+#define POWERTRAIN_COOLING_PWM_TIM htim17
+#define POWERTRAIN_COOLING_PWM_CH TIM_CHANNEL_1
+
+#define ASB_MOTOR_PWM_TIM htim8
+#define ASB_MOTOR_PWM_CH TIM_CHANNEL_1
+
 #define COUNTER_TIM htim3
 
 /* USER CODE END Private defines */

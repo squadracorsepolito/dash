@@ -67,11 +67,6 @@ volatile bool NOHV = false;
 volatile bool IMD_ERR = false;
 volatile bool TLB_ERR_RECEIVED = false;
 
-/*PWM Variables*/
-volatile uint8_t PWM_RAD_FAN = 50;
-volatile uint8_t PWM_PUMP = 50;
-volatile uint8_t PWM_BP_FAN = 50;
-
 /*RTD variables*/
 volatile bool CTOR_EN_ACK = false;
 volatile bool RTD_EN_ACK = false;
@@ -127,12 +122,14 @@ int main(void)
   MX_TIM16_Init();
   MX_TIM17_Init();
   /* USER CODE BEGIN 2 */
+    // Start the counter
+    HAL_TIM_Base_Start_IT(&COUNTER_TIM);
+
     SetupDashBoard();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-    HAL_TIM_Base_Start_IT(&htim3);
     while (1)
     {
     /* USER CODE END WHILE */

@@ -34,9 +34,9 @@ extern bool IMD_ERR;
 extern bool TLB_ERR_RECEIVED;
 
 /*PWM Variables*/
-extern uint8_t PWM_RAD_FAN;
-extern uint8_t PWM_PUMP;
-extern uint8_t PWM_BP_FAN;
+volatile uint8_t PWM_POWERTRAIN;
+volatile uint8_t PWM_BAT_FAN;
+volatile uint8_t PWM_ASB_MOTOR;
 
 /*State Machine for RTD*/
 typedef enum
@@ -96,6 +96,18 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     {
         NVIC_SystemReset();
     }
+    else if ((RxHeader.StdId == ASB_CMD_ID_CAN) && (RxHeader.DLC == 1))
+    {
+        if (RxData[0] <= 100)
+        {
+            PWM_ASB_MOTOR = RxData[0];
+            __HAL_TIM_SET_COMPARE(&ASB_MOTOR_PWM_TIM, ASB_MOTOR_PWM_CH, PWM_ASB_MOTOR);
+        }
+        else
+        {
+            // TODO: handle ASB error?
+        }
+    }
     /*Received TLB error byte in order to turn LEDs on or off*/
     else if ((RxHeader.StdId == TLB_ERROR_ID_CAN) && (RxHeader.DLC == 1) && (RxData[0] < 16))
     {
@@ -135,20 +147,18 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     /*Set duty cycle*/
     else if ((RxHeader.StdId == PWM_ID_CAN) && (RxHeader.DLC == 3))
     {
-        if (RxData[0] <= 100)
+        // Radiator fan and pump signals have been merged. To keep backwards
+        // compatibility, we set the unified signal to the maximum between the
+        // fan and pump commands
+        if (RxData[0] <= 100 && RxData[1] <= 100)
         {
-            PWM_PUMP = RxData[0];
-            __HAL_TIM_SET_COMPARE(&PWM_PUMP_TIM, PWM_PUMP_CH, PWM_PUMP);
+            PWM_POWERTRAIN = RxData[0] > RxData[1] ? RxData[0] : RxData[1];
+            __HAL_TIM_SET_COMPARE(&POWERTRAIN_COOLING_PWM_TIM, POWERTRAIN_COOLING_PWM_CH, PWM_POWERTRAIN);
         }
-        if (RxData[1] <= 100)
+        else if (RxData[2] <= 100)
         {
-            PWM_RAD_FAN = RxData[1];
-            __HAL_TIM_SET_COMPARE(&PWM_RAD_TIM, PWM_RAD_CH, PWM_RAD_FAN);
-        }
-        if (RxData[2] <= 100)
-        {
-            PWM_BP_FAN = RxData[2];
-            __HAL_TIM_SET_COMPARE(&PWM_BP_TIM, PWM_BP_CH, PWM_BP_FAN);
+            PWM_BAT_FAN = RxData[2];
+            __HAL_TIM_SET_COMPARE(&BAT_FAN_PWM_TIM, BAT_FAN_PWM_CH, PWM_BAT_FAN);
         }
     }
     else if ((RxHeader.StdId == SENSORBOARD_4_7_ID_CAN) && (RxHeader.DLC == 8))
@@ -431,21 +441,21 @@ void SetupDashBoard(void)
 {
 
     /*Start timer for PWM*/
-    if (HAL_TIM_PWM_Start(&PWM_PUMP_TIM, PWM_PUMP_CH) != HAL_OK)
+    if (HAL_TIM_PWM_Start(&POWERTRAIN_COOLING_PWM_TIM, POWERTRAIN_COOLING_PWM_CH) != HAL_OK)
     {
         /* PWM generation Error */
         Error_Handler();
     }
 
     /*Start timer for PWM*/
-    if (HAL_TIM_PWM_Start(&PWM_RAD_TIM, PWM_RAD_CH) != HAL_OK)
+    if (HAL_TIM_PWM_Start(&BAT_FAN_PWM_TIM, BAT_FAN_PWM_CH) != HAL_OK)
     {
         /* PWM generation Error */
         Error_Handler();
     }
 
     /*Start timer for PWM*/
-    if (HAL_TIM_PWM_Start(&PWM_BP_TIM, PWM_BP_CH) != HAL_OK)
+    if (HAL_TIM_PWM_Start(&ASB_MOTOR_PWM_TIM, ASB_MOTOR_PWM_CH) != HAL_OK)
     {
         /* PWM generation Error */
         Error_Handler();
@@ -519,10 +529,10 @@ void CoreDashBoard(void)
     // Send current state via CAN
     can_send_state(500);
 
-    // boards_timeouts = wdg_check();
-    // if (boards_timeouts != 0)
-    //{
-    //     error = ERROR_CAN_WDG;
-    //     rtd_fsm = STATE_ERROR;
-    // }
+    boards_timeouts = wdg_check();
+    if (boards_timeouts != 0)
+    {
+        error = ERROR_CAN_WDG;
+        rtd_fsm = STATE_ERROR;
+    }
 }

@@ -35,22 +35,22 @@ extern "C"
     extern CAN_HandleTypeDef hcan;
 
 /* USER CODE BEGIN Private defines */
-#define CHANGEME 0x69
 
 // Receive
 #define BOOTLOADER_ID_CAN 0x004
 #define PING_ID_CAN 0x146 // TODO: remove
 #define TLB_ERROR_ID_CAN 0x020
-#define AS_STATE_ID_CAN CHANGEME
-#define CMD_EBS_ID_CAN 0x71
+#define AS_STATE_ID_CAN 0x47 // TODO: TBD
+#define CMD_EBS_ID_CAN 0x71  // TODO: TBD
 #define ACK_RTD_ID_CAN 0x040
 #define PWM_ID_CAN 0x041
+#define ASB_CMD_ID_CAN 0x01 // TODO: TBD
 
 // Send
-#define MISSION_STATUS_ID_CAN 0x70 // TODO: change me
-#define DASH_RTD_ID_CAN 0x042
-#define DASH_ERR_ID_CAN 0x046
-#define DASH_STATUS_ID_CAN 0x45
+#define MISSION_STATUS_ID_CAN 0x70 // TODO: TBD
+#define DASH_RTD_ID_CAN 0x042      // TODO: TBD
+#define DASH_ERR_ID_CAN 0x046      // TODO: TBD
+#define DASH_STATUS_ID_CAN 0x45    // TODO: TBD
 
 #define CMD_COUNTER_REQUEST_ID_CAN 0x043
 #define COUNTER_REPLY_ID_CAN 0x044
