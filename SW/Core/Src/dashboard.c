@@ -4,11 +4,11 @@
 #include "as_fsm.h"
 #include "button.h"
 #include "can.h"
-#include "can_watchdog.h"
 #include "mission.h"
 #include "tim.h"
 #include "usart.h"
 #include "utils.h"
+#include "wdg.h"
 #include <stdio.h>
 /*EXTERNAL GLOBAL VARIABLES*/
 
@@ -80,6 +80,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     case AS_STATE_ID_CAN:
     case ACK_RTD_ID_CAN:
     case CMD_EBS_ID_CAN:
+        // Reset dspace timeout after boot
+        wdg_timeouts_100us[WDG_DSPACE] = 5000;
         wdg_reset(WDG_DSPACE, now);
         break;
     case TLB_ERROR_ID_CAN:

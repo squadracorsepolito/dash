@@ -57,7 +57,6 @@ C_SOURCES =  \
 Core/Src/as_fsm.c \
 Core/Src/button.c \
 Core/Src/can.c \
-Core/Src/can_watchdog.c \
 Core/Src/dashboard.c \
 Core/Src/gpio.c \
 Core/Src/main.c \
@@ -67,7 +66,8 @@ Core/Src/stm32f3xx_it.c \
 Core/Src/system_stm32f3xx.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
-Core/Src/utils.c
+Core/Src/utils.c \
+Core/Src/wdg.c
 
 
 CPP_SOURCES = \

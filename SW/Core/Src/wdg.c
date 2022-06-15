@@ -1,10 +1,10 @@
-#include "can_watchdog.h"
+#include "wdg.h"
 #include "utils.h"
 
 uint32_t wdg_timestamps_100us[WDG_NUM_BOARDS];
 // TODO: define timeouts
 uint32_t wdg_timeouts_100us[WDG_NUM_BOARDS] = {
-    [WDG_DSPACE] = 5000,
+    [WDG_DSPACE] = 300000, // Wait for dspace to boot
     [WDG_TLB] = 5000,
     [WDG_SENSORS] = 5000};
 
@@ -24,6 +24,5 @@ uint8_t wdg_check()
             boards |= 1 << board;
         }
     }
-
     return boards;
 }
