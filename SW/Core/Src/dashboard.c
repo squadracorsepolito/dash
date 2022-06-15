@@ -123,7 +123,10 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     else if ((RxHeader.StdId == AS_STATE_ID_CAN) && (RxHeader.DLC == 1))
     {
         ASB_ERR = (bool)(RxData[0] & (1 << 7));
-        as_state = RxData[0];
+        if (RxData[0] < AS_TEST)
+        {
+            as_state = RxData[0];
+        }
     }
     /*Ready to drive ACK from DSPACE*/
     else if ((RxHeader.StdId == ACK_RTD_ID_CAN) && (RxHeader.DLC == 1))
@@ -145,7 +148,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     else if ((RxHeader.StdId == CMD_EBS_ID_CAN) && (RxHeader.DLC == 1))
     {
         HAL_GPIO_WritePin(EBS_RELAY1_GPIO_Port, EBS_RELAY1_Pin, RxData[0] & 0b1);
-        HAL_GPIO_WritePin(EBS_RELAY2_GPIO_Port, EBS_RELAY2_Pin, RxData[0] >> 1);
+        HAL_GPIO_WritePin(EBS_RELAY2_GPIO_Port, EBS_RELAY2_Pin, (RxData[0] >> 1) & 0b1);
     }
     /*Set duty cycle*/
     else if ((RxHeader.StdId == PWM_ID_CAN) && (RxHeader.DLC == 3))
@@ -172,7 +175,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
 void InitDashBoard()
 {
-
     HAL_GPIO_WritePin(EBS_RELAY1_GPIO_Port, EBS_RELAY1_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(EBS_RELAY2_GPIO_Port, EBS_RELAY2_Pin, GPIO_PIN_RESET);
 
@@ -363,22 +365,6 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             break;
 
         case STATE_ERROR:
-            TxHeader.StdId = DASH_RTD_ID_CAN;
-            TxHeader.RTR = CAN_RTR_DATA;
-            TxHeader.IDE = CAN_ID_STD;
-            TxHeader.DLC = 2;
-            TxHeader.TransmitGlobalTime = DISABLE;
-            TxData[0] = error;
-            TxData[1] = 0;
-            switch (error)
-            {
-            case ERROR_CAN_WDG:
-                TxData[1] = boards_timeouts;
-                break;
-            default:
-                break;
-            }
-            CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
             break;
         }
     }
@@ -476,6 +462,25 @@ void can_send_state(uint32_t delay_100us)
                     (HAL_GPIO_ReadPin(ASB_CMD_GPIO_Port, ASB_CMD_Pin) << 4);
         TxData[4] = button_get(BUTTON_TS_CK) | button_get(BUTTON_TS_EX) | button_get(BUTTON_MISSION);
 
+        CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
+
+        // Error state
+        TxHeader.StdId = DASH_ERR_ID_CAN;
+        TxHeader.RTR = CAN_RTR_DATA;
+        TxHeader.IDE = CAN_ID_STD;
+        TxHeader.DLC = 1;
+        TxHeader.TransmitGlobalTime = DISABLE;
+        TxData[0] = error;
+        TxData[1] = 0;
+        switch (error)
+        {
+        case ERROR_CAN_WDG:
+            TxHeader.DLC = 2;
+            TxData[1] = boards_timeouts;
+            break;
+        default:
+            break;
+        }
         CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
     }
 }
