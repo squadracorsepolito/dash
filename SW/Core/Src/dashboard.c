@@ -97,9 +97,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     }
     else if ((RxHeader.StdId == ASB_CMD_ID_CAN) && (RxHeader.DLC == 1))
     {
-        if (RxData[0] <= 100)
+        if (RxData[0] <= 255)
         {
-            PWM_ASB_MOTOR = RxData[0];
+            // Min PWM pulse=800 (800us)
+            // Max PWM pulse=2100 (2.1ms)
+            PWM_ASB_MOTOR = RxData[0] * ((2100 - 800) / 255) + 800;
             __HAL_TIM_SET_COMPARE(&ASB_MOTOR_PWM_TIM, ASB_MOTOR_PWM_CH, PWM_ASB_MOTOR);
         }
         else

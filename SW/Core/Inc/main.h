@@ -80,8 +80,8 @@ void Error_Handler(void);
 #define IMD_CMD_GPIO_Port GPIOA
 #define AMI_OFF_CMD_Pin GPIO_PIN_10
 #define AMI_OFF_CMD_GPIO_Port GPIOA
-#define PWM3_CMD_Pin GPIO_PIN_10
-#define PWM3_CMD_GPIO_Port GPIOC
+#define ASB_SERVO_PWM_CMD_Pin GPIO_PIN_10
+#define ASB_SERVO_PWM_CMD_GPIO_Port GPIOC
 #define TSOFF_CMD_Pin GPIO_PIN_11
 #define TSOFF_CMD_GPIO_Port GPIOC
 #define ASB_CMD_Pin GPIO_PIN_12
@@ -100,10 +100,10 @@ void Error_Handler(void);
 #define ASSI_YELLOW_CMD_GPIO_Port GPIOB
 #define ASSI_BLUE_CMD_Pin GPIO_PIN_8
 #define ASSI_BLUE_CMD_GPIO_Port GPIOB
-#define PWM1_CMD_Pin GPIO_PIN_0
-#define PWM1_CMD_GPIO_Port GPIOE
-#define PWM2_CMD_Pin GPIO_PIN_1
-#define PWM2_CMD_GPIO_Port GPIOE
+#define BAT_FAN_PWM_CMD_Pin GPIO_PIN_0
+#define BAT_FAN_PWM_CMD_GPIO_Port GPIOE
+#define POWERTRAIN_COOLING_PWM_CMD_Pin GPIO_PIN_1
+#define POWERTRAIN_COOLING_PWM_CMD_GPIO_Port GPIOE
 /* USER CODE BEGIN Private defines */
 
 #define BAT_FAN_PWM_TIM htim16
