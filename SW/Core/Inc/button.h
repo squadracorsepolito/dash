@@ -1,3 +1,9 @@
+/**
+ * @file button.h
+ * @author Matteo Bonora (matteo.bonora@studenti.polito.it)
+ * @brief Sample and debounce the input buttons
+ * @date 2022-04-30
+ */
 
 #pragma once
 

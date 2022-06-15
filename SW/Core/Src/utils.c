@@ -1,10 +1,3 @@
-/**
- * @file utils.c
- * @author Matteo Bonora (matteo.bonora@studenti.polito.it)
- * @brief Small collection of useful functions
- * @date 2022-05-26
- */
-
 #include "utils.h"
 
 // Like systick, but with a resolution of 100us

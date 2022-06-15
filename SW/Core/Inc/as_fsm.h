@@ -1,3 +1,9 @@
+/**
+ * @file as_fsm.h
+ * @author Matteo Bonora (matteo.bonora@studenti.polito.it)
+ * @brief Mirror the state of the Autonomous System to drive the ASSI lights and buzzer
+ * @date 2022-05-26
+ */
 #pragma once
 
 typedef enum

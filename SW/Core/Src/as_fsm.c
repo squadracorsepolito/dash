@@ -1,9 +1,3 @@
-/**
- * @file as_fsm.c
- * @author Matteo Bonora (matteo.bonora@studenti.polito.it)
- * @brief Mirror the state of the Autonomous System to drive the ASSI lights and buzzer
- * @date 2022-05-26
- */
 #include "as_fsm.h"
 #include "main.h"
 #include "utils.h"
