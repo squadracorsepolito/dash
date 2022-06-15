@@ -23,6 +23,7 @@ typedef enum
 
 /*CUSTOM FUNCTIONS PROTOTYPES*/
 
+void InitDashBoard();
 void SetupDashBoard(void);
 void CoreDashBoard(void);
 void can_send_state(uint32_t delay_100us);
