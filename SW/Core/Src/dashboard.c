@@ -77,9 +77,10 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     uint32_t now = ReturnTime_100us();
     switch (RxHeader.StdId)
     {
+    case ASB_CMD_ID_CAN:
     case AS_STATE_ID_CAN:
     case ACK_RTD_ID_CAN:
-    case CMD_EBS_ID_CAN:
+    case EBS_CMD_ID_CAN:
         // Reset dspace timeout after boot
         wdg_timeouts_100us[WDG_DSPACE] = 5000;
         wdg_reset(WDG_DSPACE, now);
@@ -97,6 +98,19 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     {
         NVIC_SystemReset();
     }
+
+    /*
+     *
+     * dSpace
+     *
+     */
+    /*EBS commmand*/
+    else if ((RxHeader.StdId == EBS_CMD_ID_CAN) && (RxHeader.DLC == 1))
+    {
+        HAL_GPIO_WritePin(EBS_RELAY1_GPIO_Port, EBS_RELAY1_Pin, RxData[0] & 0b1);
+        HAL_GPIO_WritePin(EBS_RELAY2_GPIO_Port, EBS_RELAY2_Pin, (RxData[0] >> 1) & 0b1);
+    }
+    /* ASB command */
     else if ((RxHeader.StdId == ASB_CMD_ID_CAN) && (RxHeader.DLC == 1))
     {
         if (RxData[0] <= 255)
@@ -111,14 +125,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             // TODO: handle ASB error?
         }
     }
-    /*Received TLB error byte in order to turn LEDs on or off*/
-    else if ((RxHeader.StdId == TLB_ERROR_ID_CAN) && (RxHeader.DLC == 1) && (RxData[0] < 16))
-    {
-        NOHV = (bool)(RxData[0] & 1);
-        BMS_ERR = (bool)(RxData[0] & 4) || (bool)(RxData[0] & 2);
-        IMD_ERR = (bool)(RxData[0] & 4);
-        TLB_ERR_RECEIVED = true;
-    }
     /* AS state */
     else if ((RxHeader.StdId == AS_STATE_ID_CAN) && (RxHeader.DLC == 1))
     {
@@ -128,7 +134,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             as_state = RxData[0];
         }
     }
-    /*Ready to drive ACK from DSPACE*/
+    /* Ready to drive ACK */
     else if ((RxHeader.StdId == ACK_RTD_ID_CAN) && (RxHeader.DLC == 1))
     {
         if ((RxData[0] == 1) && (rtd_fsm == STATE_WAIT_CTOR_EN_ACK))
@@ -144,28 +150,30 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             REBOOT_FSM = true;
         }
     }
-    /*EBS commmand*/
-    else if ((RxHeader.StdId == CMD_EBS_ID_CAN) && (RxHeader.DLC == 1))
+    /* Cooling Command */
+    else if ((RxHeader.StdId == PWM_CMD_ID_CAN) && (RxHeader.DLC == 2))
     {
-        HAL_GPIO_WritePin(EBS_RELAY1_GPIO_Port, EBS_RELAY1_Pin, RxData[0] & 0b1);
-        HAL_GPIO_WritePin(EBS_RELAY2_GPIO_Port, EBS_RELAY2_Pin, (RxData[0] >> 1) & 0b1);
-    }
-    /*Set duty cycle*/
-    else if ((RxHeader.StdId == PWM_ID_CAN) && (RxHeader.DLC == 3))
-    {
-        // Radiator fan and pump signals have been merged. To keep backwards
-        // compatibility, we set the unified signal to the maximum between the
-        // fan and pump commands
-        if (RxData[0] <= 100 && RxData[1] <= 100)
+        // Radiator fan and pump signals have been merged to make space for ASB signal.
+        if (RxData[0] <= 100)
         {
-            PWM_POWERTRAIN = RxData[0] > RxData[1] ? RxData[0] : RxData[1];
+            // TODO: map 0-255 to PWM values
+            PWM_POWERTRAIN = RxData[0];
             __HAL_TIM_SET_COMPARE(&POWERTRAIN_COOLING_PWM_TIM, POWERTRAIN_COOLING_PWM_CH, PWM_POWERTRAIN);
         }
-        else if (RxData[2] <= 100)
+        else if (RxData[1] <= 100)
         {
+            // TODO: map 0-255 to PWM values
             PWM_BAT_FAN = RxData[2];
             __HAL_TIM_SET_COMPARE(&BAT_FAN_PWM_TIM, BAT_FAN_PWM_CH, PWM_BAT_FAN);
         }
+    }
+    /* Received TLB error byte in order to turn LEDs on or off */
+    else if ((RxHeader.StdId == TLB_ERROR_ID_CAN) && (RxHeader.DLC == 1) && (RxData[0] < 16))
+    {
+        NOHV = (bool)(RxData[0] & 1);
+        BMS_ERR = (bool)(RxData[0] & 4) || (bool)(RxData[0] & 2);
+        IMD_ERR = (bool)(RxData[0] & 4);
+        TLB_ERR_RECEIVED = true;
     }
     else if ((RxHeader.StdId == SENSORBOARD_4_7_ID_CAN) && (RxHeader.DLC == 8))
     {
@@ -231,27 +239,27 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             }
             else
             {
-                TxHeader.StdId = DASH_RTD_ID_CAN;
-                TxHeader.RTR = CAN_RTR_DATA;
-                TxHeader.IDE = CAN_ID_STD;
-                TxHeader.DLC = 1;
-                TxHeader.TransmitGlobalTime = DISABLE;
-                TxData[0] = 0x0;
-                CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
+                // TxHeader.StdId = DASH_RTD_ID_CAN;
+                // TxHeader.RTR = CAN_RTR_DATA;
+                // TxHeader.IDE = CAN_ID_STD;
+                // TxHeader.DLC = 1;
+                // TxHeader.TransmitGlobalTime = DISABLE;
+                // TxData[0] = 0x0;
+                // CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
             }
             break;
 
         case STATE_CTOR_EN:
 
-            TxHeader.StdId = DASH_RTD_ID_CAN;
-            TxHeader.RTR = CAN_RTR_DATA;
-            TxHeader.IDE = CAN_ID_STD;
-            TxHeader.DLC = 1;
-            TxHeader.TransmitGlobalTime = DISABLE;
-            TxData[0] = 0x1;
-            CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
+            // TxHeader.StdId = DASH_RTD_ID_CAN;
+            // TxHeader.RTR = CAN_RTR_DATA;
+            // TxHeader.IDE = CAN_ID_STD;
+            // TxHeader.DLC = 1;
+            // TxHeader.TransmitGlobalTime = DISABLE;
+            // TxData[0] = 0x1;
+            // CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
 
-            rtd_fsm = STATE_WAIT_CTOR_EN_ACK;
+            // rtd_fsm = STATE_WAIT_CTOR_EN_ACK;
 
             break;
 
@@ -270,13 +278,13 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             }
             else
             {
-                TxHeader.StdId = DASH_RTD_ID_CAN;
-                TxHeader.RTR = CAN_RTR_DATA;
-                TxHeader.IDE = CAN_ID_STD;
-                TxHeader.DLC = 1;
-                TxHeader.TransmitGlobalTime = DISABLE;
-                TxData[0] = 0x1;
-                CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
+                // TxHeader.StdId = DASH_RTD_ID_CAN;
+                // TxHeader.RTR = CAN_RTR_DATA;
+                // TxHeader.IDE = CAN_ID_STD;
+                // TxHeader.DLC = 1;
+                // TxHeader.TransmitGlobalTime = DISABLE;
+                // TxData[0] = 0x1;
+                // CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
             }
             break;
 
@@ -318,13 +326,13 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             }
             else
             {
-                TxHeader.StdId = DASH_RTD_ID_CAN;
-                TxHeader.RTR = CAN_RTR_DATA;
-                TxHeader.IDE = CAN_ID_STD;
-                TxHeader.DLC = 1;
-                TxHeader.TransmitGlobalTime = DISABLE;
-                TxData[0] = 0x2;
-                CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
+                // TxHeader.StdId = DASH_RTD_ID_CAN;
+                // TxHeader.RTR = CAN_RTR_DATA;
+                // TxHeader.IDE = CAN_ID_STD;
+                // TxHeader.DLC = 1;
+                // TxHeader.TransmitGlobalTime = DISABLE;
+                // TxData[0] = 0x2;
+                // CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
             }
             break;
 
@@ -351,13 +359,13 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             if (REBOOT_FSM)
             {
                 HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, OFF);
-                TxHeader.StdId = DASH_RTD_ID_CAN;
-                TxHeader.RTR = CAN_RTR_DATA;
-                TxHeader.IDE = CAN_ID_STD;
-                TxHeader.DLC = 1;
-                TxHeader.TransmitGlobalTime = DISABLE;
-                TxData[0] = 0x0;
-                CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
+                // TxHeader.StdId = DASH_RTD_ID_CAN;
+                // TxHeader.RTR = CAN_RTR_DATA;
+                // TxHeader.IDE = CAN_ID_STD;
+                // TxHeader.DLC = 1;
+                // TxHeader.TransmitGlobalTime = DISABLE;
+                // TxData[0] = 0x0;
+                // CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
 
                 REBOOT_FSM = false;
                 rtd_fsm = STATE_IDLE;
@@ -450,17 +458,16 @@ void can_send_state(uint32_t delay_100us)
         TxHeader.StdId = DASH_STATUS_ID_CAN;
         TxHeader.RTR = CAN_RTR_DATA;
         TxHeader.IDE = CAN_ID_STD;
-        TxHeader.DLC = 5;
+        TxHeader.DLC = 4;
         TxHeader.TransmitGlobalTime = DISABLE;
-        TxData[0] = 0x46;
-        TxData[1] = rtd_fsm;
-        TxData[2] = mission_is_confirmed() ? mission_get() : MISSION_NO;
-        TxData[3] = (HAL_GPIO_ReadPin(AMS_CMD_GPIO_Port, AMS_CMD_Pin)) |
+        TxData[0] = rtd_fsm;
+        TxData[1] = mission_is_confirmed() ? mission_get() : MISSION_NO;
+        TxData[2] = (HAL_GPIO_ReadPin(AMS_CMD_GPIO_Port, AMS_CMD_Pin)) |
                     (HAL_GPIO_ReadPin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin) << 1) |
                     (HAL_GPIO_ReadPin(IMD_CMD_GPIO_Port, IMD_CMD_Pin) << 2) |
-                    (HAL_GPIO_ReadPin(IMD_CMD_GPIO_Port, IMD_CMD_Pin) << 3) |
+                    (HAL_GPIO_ReadPin(RTD_CMD_GPIO_Port, RTD_CMD_Pin) << 3) |
                     (HAL_GPIO_ReadPin(ASB_CMD_GPIO_Port, ASB_CMD_Pin) << 4);
-        TxData[4] = button_get(BUTTON_TS_CK) | button_get(BUTTON_TS_EX) | button_get(BUTTON_MISSION);
+        TxData[3] = button_get(BUTTON_TS_CK) | button_get(BUTTON_TS_EX) << 1 | button_get(BUTTON_MISSION) << 2;
 
         CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
 

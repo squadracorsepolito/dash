@@ -5,7 +5,6 @@
 #define PERIOD_2HZ_100us 2500 // Duty cycle time to get 2Hz (toggle at 4Hz)
 
 // Maps logic values for missions to hardware indexes for the multiplexer
-// TODO: check correctness
 static const uint8_t ami_mapping[NUM_MISSIONS] = {
     [MISSION_ACCEL] = 1,
     [MISSION_SKIDPAD] = 0,
