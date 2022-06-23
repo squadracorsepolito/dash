@@ -87,7 +87,7 @@ void MX_CAN_Init(void)
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
     sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
     sFilterConfig.FilterIdHigh = (AS_STATE_ID_CAN << 5);
-    sFilterConfig.FilterIdLow = (ACK_RTD_ID_CAN << 5);
+    sFilterConfig.FilterIdLow = (FSM_ACK_ID_CAN << 5);
     sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
     sFilterConfig.FilterActivation = ENABLE;
     sFilterConfig.SlaveStartFilterBank = 14;
@@ -116,7 +116,7 @@ void MX_CAN_Init(void)
     sFilterConfig.FilterBank = 3;
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
     sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
-    sFilterConfig.FilterIdHigh = (SENSORBOARD_4_7_ID_CAN << 5);
+    sFilterConfig.FilterIdHigh = (BOOTLOADER_ID_CAN << 5);
     sFilterConfig.FilterIdLow = (BOOTLOADER_ID_CAN << 5);
     sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
     sFilterConfig.FilterActivation = ENABLE;

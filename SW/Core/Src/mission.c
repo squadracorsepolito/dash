@@ -33,7 +33,7 @@ void ami_mission_increment()
 {
     if (!confirmed)
     {
-        mission_set((mission_get() + 1) % (NUM_MISSIONS - 1));
+        mission_set((mission_get() % (NUM_MISSIONS - 1)) + 1);
     }
 }
 

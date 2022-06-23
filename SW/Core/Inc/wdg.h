@@ -12,7 +12,6 @@ typedef enum
 {
     WDG_DSPACE,
     WDG_TLB,
-    WDG_SENSORS,
     WDG_NUM_BOARDS
 } wdg_boards;
 

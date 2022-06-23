@@ -16,8 +16,8 @@
 
 typedef enum
 {
-    BUTTON_TS_CK = 0,
-    BUTTON_TS_EX,
+    BUTTON_COCK = 0,
+    BUTTON_EXT,
     BUTTON_MISSION,
     BUTTON_COUNT
 } button;

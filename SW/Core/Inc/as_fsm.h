@@ -8,11 +8,11 @@
 
 typedef enum
 {
-    AS_OFF = 0,
-    AS_READY,
-    AS_DRIVING,
-    AS_FINISHED,
-    AS_EMERGENCY,
+    AS_OFF = 1,
+    AS_READY = 2,
+    AS_DRIVING = 3,
+    AS_EMERGENCY = 4,
+    AS_FINISHED = 5,
     AS_TEST
 } as_state_t;
 

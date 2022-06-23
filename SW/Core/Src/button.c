@@ -3,8 +3,8 @@
 #include "utils.h"
 
 // Map GPIOs to button index
-const GPIO_TypeDef *button_gpio[BUTTON_COUNT] = {TS_CK_BTN_GPIO_Port, TS_EX_BTN_GPIO_Port, MISSION_BTN_GPIO_Port};
-const uint16_t button_pin[BUTTON_COUNT] = {TS_CK_BTN_Pin, TS_EX_BTN_Pin, MISSION_BTN_Pin};
+const GPIO_TypeDef *button_gpio[BUTTON_COUNT] = {COCK_BTN_GPIO_Port, EXT_BTN_GPIO_Port, MISSION_BTN_GPIO_Port};
+const uint16_t button_pin[BUTTON_COUNT] = {COCK_BTN_Pin, EXT_BTN_Pin, MISSION_BTN_Pin};
 
 // State and last change time of each button
 button_state state[BUTTON_COUNT] = {BUTTON_RELEASED, BUTTON_RELEASED, BUTTON_RELEASED};

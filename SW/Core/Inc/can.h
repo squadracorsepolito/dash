@@ -40,11 +40,10 @@ extern "C"
 #define EBS_CMD_ID_CAN 0x004
 #define ASB_CMD_ID_CAN 0x006
 #define AS_STATE_ID_CAN 0x008
-#define ACK_RTD_ID_CAN 0x050
+#define FSM_ACK_ID_CAN 0x050
 #define PWM_CMD_ID_CAN 0x051
 
 #define TLB_ERROR_ID_CAN 0x020
-#define SENSORBOARD_4_7_ID_CAN 0x011
 #define BOOTLOADER_ID_CAN 0x0A4
 
 // Send

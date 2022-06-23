@@ -85,7 +85,7 @@ void MX_GPIO_Init(void)
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
     /*Configure GPIO pins : PDPin PDPin */
-    GPIO_InitStruct.Pin = TS_CK_BTN_Pin | MISSION_BTN_Pin;
+    GPIO_InitStruct.Pin = COCK_BTN_Pin | MISSION_BTN_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
@@ -99,10 +99,10 @@ void MX_GPIO_Init(void)
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     /*Configure GPIO pin : PtPin */
-    GPIO_InitStruct.Pin = TS_EX_BTN_Pin;
+    GPIO_InitStruct.Pin = EXT_BTN_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(TS_EX_BTN_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(EXT_BTN_GPIO_Port, &GPIO_InitStruct);
 
     /*Configure GPIO pin : PtPin */
     GPIO_InitStruct.Pin = IMD_CMD_Pin;

@@ -70,7 +70,8 @@ volatile bool TLB_ERR_RECEIVED = false;
 /*RTD variables*/
 volatile bool CTOR_EN_ACK = false;
 volatile bool RTD_EN_ACK = false;
-volatile bool REBOOT_FSM = false;
+volatile bool IDLE_ACK = false;
+volatile bool NACK = false;
 
 volatile uint16_t brake_pressure = 0;
 

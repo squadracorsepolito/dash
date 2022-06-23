@@ -4,9 +4,8 @@
 uint32_t wdg_timestamps_100us[WDG_NUM_BOARDS];
 // TODO: define timeouts
 uint32_t wdg_timeouts_100us[WDG_NUM_BOARDS] = {
-    [WDG_DSPACE] = 300000, // Wait for dspace to boot
-    [WDG_TLB] = 5000,
-    [WDG_SENSORS] = 5000};
+    [WDG_DSPACE] = 100000, // Wait for dspace to boot
+    [WDG_TLB] = 5000};
 
 void wdg_reset(wdg_boards board, uint32_t timestamp_100us)
 {
@@ -17,11 +16,12 @@ uint8_t wdg_check()
 {
     uint8_t boards = 0;
 
-    for (uint8_t board = 0; board < WDG_NUM_BOARDS; board++)
+    for (uint8_t iboard = 0; iboard < WDG_NUM_BOARDS; iboard++)
     {
-        if (ReturnTime_100us() - wdg_timestamps_100us[board] > wdg_timeouts_100us[board])
+        // TODO: make overflow-safe
+        if (ReturnTime_100us() > wdg_timestamps_100us[iboard] + wdg_timeouts_100us[iboard])
         {
-            boards |= 1 << board;
+            boards |= 1 << iboard;
         }
     }
     return boards;
