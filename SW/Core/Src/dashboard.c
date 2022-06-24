@@ -422,7 +422,9 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             //    break;
 
         case STATE_ERROR:
-            as_state = AS_EMERGENCY;
+            // TODO: uncomment
+            // Engineers around the world are thankful this line is commented
+            // as_state = AS_EMERGENCY;
             break;
         }
     }
