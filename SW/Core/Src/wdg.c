@@ -2,10 +2,6 @@
 #include "utils.h"
 
 uint32_t wdg_timestamps_100us[WDG_NUM_BOARDS];
-// TODO: define timeouts
-uint32_t wdg_timeouts_100us[WDG_NUM_BOARDS] = {
-    [WDG_DSPACE] = 100000, // Wait for dspace to boot
-    [WDG_TLB] = 5000};
 
 void wdg_reset(wdg_boards board, uint32_t timestamp_100us)
 {

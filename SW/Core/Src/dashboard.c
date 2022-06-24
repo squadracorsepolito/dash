@@ -82,16 +82,17 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     uint32_t now = ReturnTime_100us();
     switch (RxHeader.StdId)
     {
+    case EBS_CMD_ID_CAN:
     case ASB_CMD_ID_CAN:
     case AS_STATE_ID_CAN:
     case FSM_ACK_ID_CAN:
-    case EBS_CMD_ID_CAN:
-        // Reset dspace timeout after boot
-        wdg_timeouts_100us[WDG_DSPACE] = 5000;
-        wdg_reset(WDG_DSPACE, now);
+    case PWM_CMD_ID_CAN:
+        // Reset dSpace timeout after boot
+        wdg_timeouts_100us[WDG_BOARD_DSPACE] = 5000;
+        wdg_reset(WDG_BOARD_DSPACE, now);
         break;
     case TLB_ERROR_ID_CAN:
-        wdg_reset(WDG_TLB, now);
+        wdg_reset(WDG_BOARD_TLB, now);
         break;
     }
 
