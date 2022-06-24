@@ -22,6 +22,14 @@ typedef enum
     BUTTON_COUNT
 } button;
 
+// Phisical condition of the button
+typedef enum
+{
+    BUTTON_DOWN = 0,
+    BUTTON_UP = 1,
+} button_condition;
+
+// Logical state of the button
 typedef enum
 {
     BUTTON_PRESSED = 0,
@@ -29,10 +37,34 @@ typedef enum
     BUTTON_LONGPRESS = 2
 } button_state;
 
+// Callback def
 typedef void (*func_type)(void);
 
+/**
+ * @brief Sample all the buttons
+ */
 void button_sample();
+
+/**
+ * @brief Returns the de-bounced logical state of the button
+ *
+ * @param btn The button to check
+ * @return true if button is PRESSED; false if button is RELEASED
+ */
 bool button_get(button btn);
-void button_set_shortpress(button btn, func_type function);
-void button_set_longpress(button btn, func_type function);
-uint32_t button_last_change_time(button btn);
+
+/**
+ * @brief Sets the short press callback for a button
+ *
+ * @param btn The button to set the callback to
+ * @param function The callback function
+ */
+void button_set_shortpress_callback(button btn, func_type function);
+
+/**
+ * @brief Sets the long press callback for a button
+ *
+ * @param btn The button to set the callback to
+ * @param function The callback function
+ */
+void button_set_longpress_callback(button btn, func_type function);

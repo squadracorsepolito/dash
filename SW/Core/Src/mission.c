@@ -39,8 +39,8 @@ void ami_mission_increment()
 
 void mission_setup()
 {
-    button_set_longpress(BUTTON_MISSION, ami_confirm);
-    button_set_shortpress(BUTTON_MISSION, ami_mission_increment);
+    button_set_longpress_callback(BUTTON_MISSION, ami_confirm);
+    button_set_shortpress_callback(BUTTON_MISSION, ami_mission_increment);
 }
 
 mission_t mission_get()
