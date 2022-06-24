@@ -10,38 +10,8 @@
 #include "utils.h"
 #include "wdg.h"
 #include <stdio.h>
-/*EXTERNAL GLOBAL VARIABLES*/
 
-extern char msg[80];
-extern char value[60];
-
-extern CAN_HandleTypeDef hcan;
-
-extern CAN_TxHeaderTypeDef TxHeader;
-extern CAN_RxHeaderTypeDef RxHeader;
-extern uint32_t TxMailbox;
-extern uint8_t TxData[8];
-extern uint8_t RxData[8];
-
-/*Error Variables*/
-error_t error = ERROR_NONE;
-uint8_t boards_timeouts;
-
-extern bool ASB_ERR; // Autonomous System Brake
-extern bool BMS_ERR;
-extern bool NOHV; // TS Off
-extern bool IMD_ERR;
-extern bool TLB_ERR_RECEIVED;
-
-bool COCK_BUTTON = false;
-bool EXT_BUTTON = false;
-
-/*PWM Variables*/
-volatile uint8_t PWM_POWERTRAIN;
-volatile uint8_t PWM_BAT_FAN;
-volatile uint8_t PWM_ASB_MOTOR;
-
-/*State Machine for RTD*/
+/* Dashboard State Machine */
 typedef enum
 {
     STATE_IDLE = 0,
@@ -53,24 +23,48 @@ typedef enum
     STATE_ERROR
 } state;
 
+/* State change triggers */
 typedef enum
 {
-    TRIG_NONE = 0,
-    TRIG_COCK = 1,
-    TRIG_EXT = 2
+    TRIG_NONE = 0, // No trigger/triggered by CAN bus
+    TRIG_COCK = 1, // Cockpit button
+    TRIG_EXT = 2   // External button
 } state_trig;
 state_trig STATE_CHANGE_TRIG = TRIG_NONE;
 
+// FSM state keeping
 state rtd_fsm = STATE_IDLE;
 
-/*RTD_FSM variables*/
-extern bool CTOR_EN_ACK;
-extern bool RTD_EN_ACK;
-extern bool IDLE_ACK;
-extern bool NACK;
+CAN_TxHeaderTypeDef TxHeader;
+CAN_RxHeaderTypeDef RxHeader;
+uint32_t TxMailbox;
+uint8_t TxData[8] = {0};
+uint8_t RxData[8] = {0};
 
-/*Front brake pressure value*/
-extern volatile uint16_t brake_pressure;
+/* Error Variables */
+error_t error = ERROR_NONE;
+uint8_t boards_timeouts;
+
+/* Cock LEDs flags */
+volatile bool ASB_ERR;
+volatile bool BMS_ERR;
+volatile bool TSOFF;
+volatile bool IMD_ERR;
+
+/* dSpace ACK flags */
+volatile bool CTOR_EN_ACK;
+volatile bool RTD_EN_ACK;
+volatile bool IDLE_ACK;
+volatile bool NACK;
+
+/* PWM Variables */
+volatile uint8_t PWM_POWERTRAIN;
+volatile uint8_t PWM_BAT_FAN;
+volatile uint8_t PWM_ASB_MOTOR;
+
+/* Button short press flags */
+bool COCK_BUTTON = false;
+bool EXT_BUTTON = false;
 
 /*CUSTOM FUNCTIONS*/
 
@@ -106,6 +100,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     {
         NVIC_SystemReset();
     }
+
     /*
      *
      * dSpace
@@ -144,21 +139,20 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     /* ACK from dSpace */
     else if ((RxHeader.StdId == FSM_ACK_ID_CAN) && (RxHeader.DLC == 1))
     {
-        if ((RxData[0] == 1) && (rtd_fsm == STATE_CTOR_EN_WAIT_ACK))
+        switch (RxData[0])
         {
+        case 1:
             CTOR_EN_ACK = true;
-        }
-        else if ((RxData[0] == 2) && (rtd_fsm == STATE_TS_ON || rtd_fsm == STATE_RTD_WAIT_ACK))
-        {
+            break;
+        case 2:
             RTD_EN_ACK = true;
-        }
-        else if ((RxData[0] == 3) && (rtd_fsm == STATE_IDLE_WAIT_ACK || rtd_fsm == STATE_RTD))
-        {
+            break;
+        case 3:
             IDLE_ACK = true;
-        }
-        else if ((RxData[0] == 4) && (rtd_fsm == STATE_CTOR_EN_WAIT_ACK || rtd_fsm == STATE_RTD_WAIT_ACK || rtd_fsm == STATE_IDLE_WAIT_ACK))
-        {
+            break;
+        case 4:
             NACK = true;
+            break;
         }
     }
     /* Cooling Command */
@@ -178,13 +172,18 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             __HAL_TIM_SET_COMPARE(&BAT_FAN_PWM_TIM, BAT_FAN_PWM_CH, PWM_BAT_FAN);
         }
     }
+
+    /*
+     *
+     * TLB
+     *
+     */
     /* Received TLB error byte in order to turn LEDs on or off */
     else if ((RxHeader.StdId == TLB_ERROR_ID_CAN) && (RxHeader.DLC == 1) && (RxData[0] < 16))
     {
-        NOHV = (bool)(RxData[0] & 1);
+        TSOFF = (bool)(RxData[0] & 1);
         BMS_ERR = (bool)(RxData[0] & 4) || (bool)(RxData[0] & 2);
         IMD_ERR = (bool)(RxData[0] & 4);
-        TLB_ERR_RECEIVED = true;
     }
 }
 
@@ -214,7 +213,7 @@ void InitDashBoard()
     HAL_Delay(50);
     HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, GPIO_PIN_RESET);
 
-    // Test input states
+    // Test inputs
     if (button_get(BUTTON_COCK) ||
         button_get(BUTTON_EXT) ||
         button_get(BUTTON_MISSION))
@@ -229,18 +228,12 @@ void InitDashBoard()
 
 void cock_callback()
 {
-    if (rtd_fsm == STATE_IDLE || rtd_fsm == STATE_TS_ON || rtd_fsm == STATE_RTD)
-    {
-        COCK_BUTTON = true;
-    }
+    COCK_BUTTON = true;
 }
 
 void ext_callback()
 {
-    if (rtd_fsm == STATE_IDLE)
-    {
-        EXT_BUTTON = true;
-    }
+    EXT_BUTTON = true;
 }
 
 /*FSM*/
@@ -258,105 +251,53 @@ void ReadyToDriveFSM(uint32_t delay_100us)
         case STATE_IDLE:
             if (EXT_BUTTON)
             {
-                EXT_BUTTON = false;
                 STATE_CHANGE_TRIG = TRIG_EXT;
                 rtd_fsm = STATE_CTOR_EN_WAIT_ACK;
             }
             else if (COCK_BUTTON)
             {
-                COCK_BUTTON = false;
                 STATE_CHANGE_TRIG = TRIG_COCK;
                 rtd_fsm = STATE_CTOR_EN_WAIT_ACK;
             }
-            else
-            {
-                HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, OFF);
-                // TxHeader.StdId = DASH_RTD_ID_CAN;
-                // TxHeader.RTR = CAN_RTR_DATA;
-                // TxHeader.IDE = CAN_ID_STD;
-                // TxHeader.DLC = 1;
-                // TxHeader.TransmitGlobalTime = DISABLE;
-                // TxData[0] = 0x0;
-                // CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
-            }
+            HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, OFF);
             break;
 
         case STATE_CTOR_EN_WAIT_ACK:
-
             if (NACK)
             {
-                NACK = false;
-                CTOR_EN_ACK = false;
                 STATE_CHANGE_TRIG = TRIG_NONE;
                 rtd_fsm = STATE_IDLE;
             }
             else if (CTOR_EN_ACK)
             {
-                CTOR_EN_ACK = false;
                 STATE_CHANGE_TRIG = TRIG_NONE;
                 rtd_fsm = STATE_TS_ON;
-            }
-            else
-            {
-                // TxHeader.StdId = DASH_RTD_ID_CAN;
-                // TxHeader.RTR = CAN_RTR_DATA;
-                // TxHeader.IDE = CAN_ID_STD;
-                // TxHeader.DLC = 1;
-                // TxHeader.TransmitGlobalTime = DISABLE;
-                // TxData[0] = 0x1;
-                // CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
             }
             break;
 
         case STATE_TS_ON:
-
             if (RTD_EN_ACK)
             {
-                RTD_EN_ACK = false;
                 STATE_CHANGE_TRIG = TRIG_NONE;
                 rtd_fsm = STATE_RTD;
             }
             else if (COCK_BUTTON)
             {
-                COCK_BUTTON = false;
                 STATE_CHANGE_TRIG = TRIG_COCK;
                 rtd_fsm = STATE_RTD_WAIT_ACK;
-            }
-            else
-            {
-                // TxHeader.StdId = DASH_RTD_ID_CAN;
-                // TxHeader.RTR = CAN_RTR_DATA;
-                // TxHeader.IDE = CAN_ID_STD;
-                // TxHeader.DLC = 1;
-                // TxHeader.TransmitGlobalTime = DISABLE;
-                // TxData[0] = 0x1;
-                // CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
             }
             break;
 
         case STATE_RTD_WAIT_ACK:
             if (NACK || IDLE_ACK)
             {
-                NACK = false;
-                IDLE_ACK = false;
                 STATE_CHANGE_TRIG = TRIG_NONE;
                 rtd_fsm = STATE_IDLE;
             }
             else if (RTD_EN_ACK)
             {
-                RTD_EN_ACK = false;
                 STATE_CHANGE_TRIG = TRIG_NONE;
                 rtd_fsm = STATE_RTD;
-            }
-            else
-            {
-                // TxHeader.StdId = DASH_RTD_ID_CAN;
-                // TxHeader.RTR = CAN_RTR_DATA;
-                // TxHeader.IDE = CAN_ID_STD;
-                // TxHeader.DLC = 1;
-                // TxHeader.TransmitGlobalTime = DISABLE;
-                // TxData[0] = 0x2;
-                // CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
             }
             break;
 
@@ -364,12 +305,10 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             // TODO: buzzer
             if (IDLE_ACK)
             {
-                IDLE_ACK = false;
                 rtd_fsm = STATE_IDLE;
             }
             else if (COCK_BUTTON)
             {
-                COCK_BUTTON = false;
                 STATE_CHANGE_TRIG = TRIG_COCK;
                 rtd_fsm = STATE_IDLE_WAIT_ACK;
             }
@@ -394,13 +333,11 @@ void ReadyToDriveFSM(uint32_t delay_100us)
         case STATE_IDLE_WAIT_ACK:
             if (NACK)
             {
-                NACK = false;
                 STATE_CHANGE_TRIG = TRIG_NONE;
                 rtd_fsm = STATE_RTD;
             }
             else if (IDLE_ACK)
             {
-                IDLE_ACK = false;
                 STATE_CHANGE_TRIG = TRIG_NONE;
                 rtd_fsm = STATE_IDLE;
             }
@@ -412,6 +349,15 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             // as_state = AS_EMERGENCY;
             break;
         }
+
+        // Reset all flags
+        CTOR_EN_ACK = false;
+        RTD_EN_ACK = false;
+        IDLE_ACK = false;
+        NACK = false;
+
+        COCK_BUTTON = false;
+        EXT_BUTTON = false;
     }
 }
 
@@ -424,20 +370,18 @@ void UpdateCockpitLed(uint32_t delay_100us)
     {
         HAL_GPIO_WritePin(ASB_CMD_GPIO_Port, ASB_CMD_Pin, ASB_ERR);
 
-        if (TLB_ERR_RECEIVED)
+        if (boards_timeouts & WDG_TLB)
         {
-            TLB_ERR_RECEIVED = false;
-            HAL_GPIO_WritePin(AMS_CMD_GPIO_Port, AMS_CMD_Pin, BMS_ERR);
-            HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, NOHV);
-            HAL_GPIO_WritePin(IMD_CMD_GPIO_Port, IMD_CMD_Pin, IMD_ERR);
-            /*LED ON or OFF depending on ERR_RECEIVED*/
-        }
-        else
-        {
+            // CAN timeout. everything is bad
             HAL_GPIO_WritePin(AMS_CMD_GPIO_Port, AMS_CMD_Pin, ON);
             HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, OFF);
             HAL_GPIO_WritePin(IMD_CMD_GPIO_Port, IMD_CMD_Pin, ON);
-            /*LED always ON, timeout can*/
+        }
+        else
+        {
+            HAL_GPIO_WritePin(AMS_CMD_GPIO_Port, AMS_CMD_Pin, BMS_ERR);
+            HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, TSOFF);
+            HAL_GPIO_WritePin(IMD_CMD_GPIO_Port, IMD_CMD_Pin, IMD_ERR);
         }
     }
 }
@@ -468,22 +412,12 @@ void SetupDashBoard(void)
     }
 
     mission_setup();
-    button_set_shortpress(BUTTON_COCK, cock_callback);
-    button_set_shortpress(BUTTON_EXT, ext_callback);
+    button_set_shortpress_callback(BUTTON_COCK, cock_callback);
+    button_set_shortpress_callback(BUTTON_EXT, ext_callback);
 
+    char msg[54] = {0};
     sprintf(msg, "Dashboard 2022 Boot - build %s @ %s\n\r", __DATE__, __TIME__);
-    HAL_UART_Transmit(&huart1, (uint8_t *)msg, 30, 20);
-    memset(msg, 0, strlen(msg));
-    sprintf(msg, "Configuration complete\n\r\n\r");
-    HAL_UART_Transmit(&huart1, (uint8_t *)msg, 30, 20);
-
-#ifdef DEBUG
-    memset(msg, 0, strlen(msg));
-    sprintf(msg, "Debug Mode = ON\n\r\n\r");
-    HAL_UART_Transmit(&huart1, (uint8_t *)msg, 30, 20);
-#endif
-
-    /*BootScreen with verion of the code and message of complete configuration*/
+    HAL_UART_Transmit(&huart1, (uint8_t *)msg, 38, 20);
 }
 
 /*Send status data to CAN BUS*/

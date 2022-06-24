@@ -16,6 +16,10 @@ typedef enum
     AS_TEST
 } as_state_t;
 
+// State keeper
 extern as_state_t as_state;
 
+/**
+ * @brief Runs the AS finite state machine
+ */
 void as_run();
