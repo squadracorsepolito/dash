@@ -1,0 +1,131 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: DASH dSPACE
+
+
+BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
+ SG_ ts_ext_button_status : 17|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ mission_button : 18|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ rtd_button_status : 16|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ NewSignal_0024 : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ dspace_fsm_status : 0|8@1+ (1,0) [0|0] ""  DASH
+ SG_ NewSignal_0002 : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 7 DASH_STATUS: 4 DASH
+ SG_ dash_fsm : 0|8@1+ (1,0) [0|0] ""  dSPACE
+ SG_ dash_mission : 8|8@1+ (1,0) [0|0] ""  dSPACE
+ SG_ ams_led_status : 16|1@1+ (1,0) [0|0] ""  dSPACE
+ SG_ ts_off_led_status : 17|1@1+ (1,0) [0|0] ""  dSPACE
+ SG_ imd_led_status : 18|1@1+ (1,0) [0|0] ""  dSPACE
+ SG_ rtd_led_status : 19|1@1+ (1,0) [0|0] ""  dSPACE
+ SG_ asb_led_status : 20|1@1+ (1,0) [0|0] ""  dSPACE
+ SG_ ts_cock_button : 24|1@1+ (1,0) [0|0] ""  dSPACE
+ SG_ ts_ext_button : 25|1@1+ (1,0) [0|0] ""  dSPACE
+ SG_ ami_button : 26|1@1+ (1,0) [0|0] ""  dSPACE
+ SG_ state_change_trig : 27|2@1+ (1,0) [0|0] ""  dSPACE
+
+BO_ 21 DASH_ERR: 2 DASH
+ SG_ error_type : 0|8@1+ (1,0) [0|0] ""  dSPACE
+ SG_ dspace_err : 8|1@1+ (1,0) [0|0] ""  dSPACE
+ SG_ tlb_err : 9|1@1+ (1,0) [0|0] ""  dSPACE
+ SG_ sensors_err : 10|1@1+ (1,0) [0|0] ""  dSPACE
+ SG_ num_boards : 11|1@1+ (1,0) [0|0] ""  dSPACE
+
+BO_ 6 dSPACE_ASB_CMD: 1 dSPACE
+ SG_ asb_cmd_data : 0|8@1+ (1,0) [0|255] ""  DASH
+
+BO_ 8 dSPACE_AS_STATE: 2 dSPACE
+ SG_ ASB_ERR : 0|1@1+ (1,0) [0|1] ""  DASH
+ SG_ dSpace_AS_state : 8|8@1+ (1,0) [0|10] ""  DASH
+
+BO_ 4 dSPACE_EBS_CMD: 1 dSPACE
+ SG_ relay1_cmd : 0|1@1+ (1,0) [0|0] ""  DASH
+ SG_ relay2_cmd : 1|1@1+ (1,0) [0|0] ""  DASH
+
+BO_ 80 dSPACE_FSM_ACK: 1 dSPACE
+ SG_ dash_fsm_ack : 0|8@1+ (1,0) [0|0] ""  DASH
+
+BO_ 81 dSPACE_COOLING: 2 dSPACE
+ SG_ pump_fan_pwm : 0|8@1+ (1,0) [0|255] ""  DASH
+ SG_ hv_battery_fan_pwm : 8|8@1+ (1,0) [0|255] ""  DASH
+
+
+
+CM_ SG_ 3221225472 dspace_fsm_status "AS_OFF = 0,
+AS_READY=1,
+AS_DRIVING=2,
+AS_FINISHED=3,
+AS_EMERGENCY=4";
+CM_ SG_ 7 dash_fsm "STATE_IDLE =0x0,
+STATE_WAIT_CTOR_EN_ACK = 0x1,
+STATE_TS_ON =
+STATE_WAIT_RTD_EN_ACK,
+STATE_RTD,
+STATE_IDLE_WAIT,
+STATE_ERROR";
+CM_ SG_ 7 dash_mission "DEFAULT: MISSION_NO
+MISSION_ACCEL = 0,
+MISSION_SKIDPAD = 1,
+MISSION_AUTOX = 2,
+MISSION_TRACKDRIVE = 3,
+MISSION_EBSTEST = 4,
+MISSION_INSPECT = 5,
+MISSION_MANUAL = 6,
+MISSION_NO = 7,";
+CM_ SG_ 7 ts_cock_button "istantaneo";
+CM_ SG_ 7 ts_ext_button "istantaneo";
+CM_ SG_ 7 ami_button "istantaneo";
+CM_ SG_ 7 state_change_trig "IDLE = 0;
+ts_cock_button = 1;
+ts_ext_button = 2;";
+CM_ SG_ 21 error_type "ERROR_NONE = 0x0,
+ERROR_CAN_WDG,
+ERROR_INIT_BTN,
+ERROR_BRAKE_PRESSURE";
+CM_ SG_ 6 asb_cmd_data "0 -> 255";
+CM_ SG_ 80 dash_fsm_ack "case CTOR_EN_ACK:
+  data[0]=1
+case RTD_EN_ACK:
+  data[0]=2
+case REBOOT_FSM:
+  data[0]=3
+case NACK:
+  data[0]=4";
+CM_ SG_ 81 pump_fan_pwm "duty cycle pompe cold plate e ventole radiatori sidepods
+0 -> 255";
+CM_ SG_ 81 hv_battery_fan_pwm "duty cycle ventole pacco hv
+0 -> 255";
+
