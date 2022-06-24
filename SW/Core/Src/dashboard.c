@@ -286,6 +286,7 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             if (NACK)
             {
                 NACK = false;
+                CTOR_EN_ACK = false;
                 STATE_CHANGE_TRIG = TRIG_NONE;
                 rtd_fsm = STATE_IDLE;
             }
@@ -334,9 +335,10 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             break;
 
         case STATE_RTD_WAIT_ACK:
-            if (NACK)
+            if (NACK || IDLE_ACK)
             {
                 NACK = false;
+                IDLE_ACK = false;
                 STATE_CHANGE_TRIG = TRIG_NONE;
                 rtd_fsm = STATE_IDLE;
             }
@@ -403,23 +405,6 @@ void ReadyToDriveFSM(uint32_t delay_100us)
                 rtd_fsm = STATE_IDLE;
             }
             break;
-            // case STATE_STOP:
-            //     if (REBOOT_FSM)
-            //     {
-            //         HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, OFF);
-
-            //        TxHeader.StdId = DASH_RTD_ID_CAN;
-            //        TxHeader.RTR = CAN_RTR_DATA;
-            //        TxHeader.IDE = CAN_ID_STD;
-            //        TxHeader.DLC = 1;
-            //        TxHeader.TransmitGlobalTime = DISABLE;
-            //        TxData[0] = 0x0;
-            //        CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
-
-            //        REBOOT_FSM = false;
-            //        rtd_fsm = STATE_IDLE;
-            //    }
-            //    break;
 
         case STATE_ERROR:
             // TODO: uncomment
@@ -445,7 +430,6 @@ void UpdateCockpitLed(uint32_t delay_100us)
             HAL_GPIO_WritePin(AMS_CMD_GPIO_Port, AMS_CMD_Pin, BMS_ERR);
             HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, NOHV);
             HAL_GPIO_WritePin(IMD_CMD_GPIO_Port, IMD_CMD_Pin, IMD_ERR);
-
             /*LED ON or OFF depending on ERR_RECEIVED*/
         }
         else
