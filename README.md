@@ -1,7 +1,5 @@
-
-# NuovaDash22
-
-Benvenuti nella repository ufficiale contente i file utilizzati per la scheda NuovaDash22 utilizzata dal team Squadra Corse Driverless nell'anno 2021/22
+![Dash](dash.png)
+Benvenuti nella repository ufficiale certificata contenente i file utilizzati per la scheda NuovaDash22© utilizzata dal team Squadra Corse Driverless nell'anno 2021/22
 
 Repository mantenuta da Matteo Bonora (Software) e Francesco Minichelli (Hardware e Software)
 
