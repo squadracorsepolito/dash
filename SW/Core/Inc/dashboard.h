@@ -10,15 +10,12 @@
 
 #define ON 1
 #define OFF 0
-#define BRAKE_THRESHOLD 500
-#define DEBUG
 
 typedef enum
 {
     ERROR_NONE = 0,
     ERROR_CAN_WDG,
-    ERROR_INIT_BTN,
-    ERROR_BRAKE_PRESSURE
+    ERROR_INIT_BTN
 } error_t;
 
 /*CUSTOM FUNCTIONS PROTOTYPES*/

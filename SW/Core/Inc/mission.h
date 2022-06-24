@@ -41,7 +41,7 @@ bool mission_is_confirmed();
 mission_t mission_get();
 
 /**
- * @brief If the mission is not confirmed, select a new mission
+ * @brief If the mission is not confirmed, set the given mission
  *
  * @param mission New mission
  */
