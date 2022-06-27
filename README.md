@@ -3,7 +3,22 @@ Benvenuti nella repository ufficiale certificata contenente i file utilizzati pe
 
 Repository mantenuta da Matteo Bonora (Software) e Francesco Minichelli (Hardware e Software)
 
-### Configurazione STM32CubeIDE per upload software tramite CAN
+## How to use the makefile
+This project is generated to work with bare makefiles instead of the STM32CubeIDE. In order to successfully use the makefiles, you need to have a few tools installed. Refer to [this](https://www.bonnee.me/blog/stm32-vscode/) guide on how to setup your environment and install the needed tools (Visual Studio Code is optional and only needed to do debugging and to regenerate the makefile after regenerating code through STM32CubeMX).
+
+If you want to **flash over CAN-bus**, you will need an [additional tool](https://github.com/arkku/srec) to convert the `.bin` firmware file to `.srec` and [bootcommander](https://www.feaser.com/openblt/doku.php?id=manual:bootcommander) to send the firmware to the dashboard.
+
+### Build
+In order to build the project, issue the following command:
+`make -f STM32Make.make`
+You can call `make clean` to clean the build directory.
+
+### Flash
+To configure the `can0` interface on your computer, you can call `make can` with root privileges.
+
+`make canflash` will automatically convert the firmware to Motorola S-Record and pass it to bootcommander. If you only want to have the `.srec` file, you can call `make srec`
+
+## Configurazione STM32CubeIDE per upload software tramite CAN
 
 Project Properties -> C/C++ Build -> Settings -> Tool Settings -> MCU Post build outputs -> Selezionare "Convert to Motorola S-record file (-O ihex)"
 

@@ -196,6 +196,8 @@ can:
 $(BUILD_DIR)/$(TARGET).srec: $(BUILD_DIR)/$(TARGET).bin
 	bin2srec -a 0x8004000 -i $< -o $@
 
+srec: $(BUILD_DIR)/$(TARGET).srec
+
 canflash: $(BUILD_DIR)/$(TARGET).srec
 	cansend can0 0A4#FF00
 	bootcommander -t=xcp_can -d=can0 -b=1000000 -tid=772 -rid=770 $<
