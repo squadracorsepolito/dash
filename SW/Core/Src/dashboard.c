@@ -371,7 +371,7 @@ void UpdateCockpitLed(uint32_t delay_100us)
     {
         HAL_GPIO_WritePin(ASB_CMD_GPIO_Port, ASB_CMD_Pin, ASB_ERR);
 
-        if (boards_timeouts & WDG_TLB)
+        if (boards_timeouts & WDG_BOARD_TLB)
         {
             // CAN timeout. everything is bad
             HAL_GPIO_WritePin(AMS_CMD_GPIO_Port, AMS_CMD_Pin, ON);

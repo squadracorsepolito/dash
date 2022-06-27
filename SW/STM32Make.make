@@ -36,24 +36,6 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_can.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_cortex.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_dma.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_exti.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_flash.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_flash_ex.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_gpio.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_i2c.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_i2c_ex.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_pwr.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_pwr_ex.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_rcc.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_rcc_ex.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_tim.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_tim_ex.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart.c \
-/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart_ex.c \
 Core/Src/as_fsm.c \
 Core/Src/button.c \
 Core/Src/can.c \
@@ -67,7 +49,25 @@ Core/Src/system_stm32f3xx.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
 Core/Src/utils.c \
-Core/Src/wdg.c
+Core/Src/wdg.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_can.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_cortex.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_dma.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_exti.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_flash.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_flash_ex.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_gpio.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_i2c.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_i2c_ex.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_pwr.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_pwr_ex.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_rcc.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_rcc_ex.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_tim.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_tim_ex.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart_ex.c
 
 
 CPP_SOURCES = \
@@ -139,11 +139,11 @@ AS_INCLUDES = \
 
 # C includes
 C_INCLUDES =  \
--I/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/CMSIS/Device/ST/STM32F3xx/Include \
--I/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/CMSIS/Include \
--I/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Inc \
--I/home/bonnee/.local/share/stm32cube/Repository/STM32Cube_FW_F3_V1.11.3/Drivers/STM32F3xx_HAL_Driver/Inc/Legacy \
--ICore/Inc
+-ICore/Inc \
+-IDrivers/CMSIS/Device/ST/STM32F3xx/Include \
+-IDrivers/CMSIS/Include \
+-IDrivers/STM32F3xx_HAL_Driver/Inc \
+-IDrivers/STM32F3xx_HAL_Driver/Inc/Legacy
 
 
 
