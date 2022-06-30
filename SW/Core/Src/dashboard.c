@@ -110,8 +110,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     /*EBS commmand*/
     else if ((RxHeader.StdId == EBS_CMD_ID_CAN) && (RxHeader.DLC == 1))
     {
-        HAL_GPIO_WritePin(EBS_RELAY1_GPIO_Port, EBS_RELAY1_Pin, RxData[0] & 0b1);
-        HAL_GPIO_WritePin(EBS_RELAY2_GPIO_Port, EBS_RELAY2_Pin, (RxData[0] >> 1) & 0b1);
+        HAL_GPIO_WritePin(EBS_RELAY1_CMD_GPIO_Port, EBS_RELAY1_CMD_Pin, RxData[0] & 0b1);
+        HAL_GPIO_WritePin(EBS_RELAY2_CMD_GPIO_Port, EBS_RELAY2_CMD_Pin, (RxData[0] >> 1) & 0b1);
     }
     /* ASB command */
     else if ((RxHeader.StdId == ASB_CMD_ID_CAN) && (RxHeader.DLC == 1))
@@ -164,7 +164,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
         {
             // TODO: map 0-255 to PWM values
             PWM_POWERTRAIN = RxData[0];
+#ifdef POWERTRAIN_COOLING_PWM_TIM
             __HAL_TIM_SET_COMPARE(&POWERTRAIN_COOLING_PWM_TIM, POWERTRAIN_COOLING_PWM_CH, PWM_POWERTRAIN);
+#else
+            __HAL_TIM_SET_COMPARE(&RADIATOR_FANS_PWM_TIM, RADIATOR_FANS_PWM_CH, PWM_POWERTRAIN);
+#endif
         }
         else if (RxData[1] <= 100)
         {
@@ -190,8 +194,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
 void InitDashBoard()
 {
-    HAL_GPIO_WritePin(EBS_RELAY1_GPIO_Port, EBS_RELAY1_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(EBS_RELAY2_GPIO_Port, EBS_RELAY2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(EBS_RELAY1_CMD_GPIO_Port, EBS_RELAY1_CMD_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(EBS_RELAY2_CMD_GPIO_Port, EBS_RELAY2_CMD_Pin, GPIO_PIN_RESET);
 
     // Turn on all LEDs
     HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, GPIO_PIN_SET);
@@ -391,8 +395,12 @@ void UpdateCockpitLed(uint32_t delay_100us)
 void SetupDashBoard(void)
 {
 
-    /*Start timer for PWM*/
+/*Start timer for PWM*/
+#ifdef POWERTRAIN_COOLING_PWM_TIM
     if (HAL_TIM_PWM_Start(&POWERTRAIN_COOLING_PWM_TIM, POWERTRAIN_COOLING_PWM_CH) != HAL_OK)
+#else
+    if (HAL_TIM_PWM_Start(&RADIATOR_FANS_PWM_TIM, RADIATOR_FANS_PWM_CH) != HAL_OK)
+#endif
     {
         /* PWM generation Error */
         Error_Handler();

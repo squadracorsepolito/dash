@@ -75,7 +75,7 @@ CPP_SOURCES = \
 
 # ASM sources
 ASM_SOURCES =  \
-startup_stm32f303xe.s
+startup_stm32f302x8.s
 
 
 
@@ -124,13 +124,13 @@ AS_DEFS =
 
 # C defines
 C_DEFS =  \
--DSTM32F303xE \
+-DSTM32F302x8 \
 -DUSE_HAL_DRIVER
 
 
 # CXX defines
 CXX_DEFS =  \
--DSTM32F303xE \
+-DSTM32F302x8 \
 -DUSE_HAL_DRIVER
 
 
@@ -171,7 +171,7 @@ CXXFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32F303VETx_FLASH.ld
+LDSCRIPT = STM32F302C8Tx_FLASH.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 
@@ -243,19 +243,6 @@ erase: $(BUILD_DIR)/$(TARGET).elf
 #######################################
 clean:
 	-rm -fR $(BUILD_DIR)
-
-can:
-	ip link set can0 type can bitrate 1000000
-	ip link set can0 up
-
-$(BUILD_DIR)/$(TARGET).srec: $(BUILD_DIR)/$(TARGET).bin
-	bin2srec -a 0x8004000 -i $< -o $@
-
-srec: $(BUILD_DIR)/$(TARGET).srec
-
-canflash: $(BUILD_DIR)/$(TARGET).srec
-	cansend can0 0A4#FF00
-	bootcommander -t=xcp_can -d=can0 -b=1000000 -tid=772 -rid=770 $<
 	
 #######################################
 # dependencies

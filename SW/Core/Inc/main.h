@@ -58,53 +58,60 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define EBS_RELAY1_Pin GPIO_PIN_10
-#define EBS_RELAY1_GPIO_Port GPIOD
-#define EBS_RELAY2_Pin GPIO_PIN_11
-#define EBS_RELAY2_GPIO_Port GPIOD
-#define COCK_BTN_Pin GPIO_PIN_12
-#define COCK_BTN_GPIO_Port GPIOD
-#define MISSION_BTN_Pin GPIO_PIN_13
-#define MISSION_BTN_GPIO_Port GPIOD
-#define BUZZERAS_CMD_Pin GPIO_PIN_14
-#define BUZZERAS_CMD_GPIO_Port GPIOD
-#define RTD_CMD_Pin GPIO_PIN_6
-#define RTD_CMD_GPIO_Port GPIOC
-#define BUZZEREV_CMD_Pin GPIO_PIN_7
-#define BUZZEREV_CMD_GPIO_Port GPIOC
-#define AMS_CMD_Pin GPIO_PIN_8
-#define AMS_CMD_GPIO_Port GPIOC
-#define EXT_BTN_Pin GPIO_PIN_9
-#define EXT_BTN_GPIO_Port GPIOC
-#define IMD_CMD_Pin GPIO_PIN_8
-#define IMD_CMD_GPIO_Port GPIOA
-#define AMI_OFF_CMD_Pin GPIO_PIN_10
-#define AMI_OFF_CMD_GPIO_Port GPIOA
-#define ASB_SERVO_PWM_CMD_Pin GPIO_PIN_10
-#define ASB_SERVO_PWM_CMD_GPIO_Port GPIOC
-#define TSOFF_CMD_Pin GPIO_PIN_11
-#define TSOFF_CMD_GPIO_Port GPIOC
-#define ASB_CMD_Pin GPIO_PIN_12
-#define ASB_CMD_GPIO_Port GPIOC
-#define LED1_Pin GPIO_PIN_2
-#define LED1_GPIO_Port GPIOD
-#define LED2_Pin GPIO_PIN_3
-#define LED2_GPIO_Port GPIOD
-#define AMI3_CMD_Pin GPIO_PIN_4
-#define AMI3_CMD_GPIO_Port GPIOD
-#define AMI2_CMD_Pin GPIO_PIN_6
-#define AMI2_CMD_GPIO_Port GPIOD
+#define AMI3_CMD_Pin GPIO_PIN_0
+#define AMI3_CMD_GPIO_Port GPIOA
+#define ASB_SERVO_PWM_CMD_Pin GPIO_PIN_1
+#define ASB_SERVO_PWM_CMD_GPIO_Port GPIOA
+#define EBS_RELAY2_CMD_Pin GPIO_PIN_2
+#define EBS_RELAY2_CMD_GPIO_Port GPIOA
+#define EBS_RELAY1_CMD_Pin GPIO_PIN_3
+#define EBS_RELAY1_CMD_GPIO_Port GPIOA
+#define COCK_BTN_Pin GPIO_PIN_5
+#define COCK_BTN_GPIO_Port GPIOA
+#define MISSION_BTN_Pin GPIO_PIN_6
+#define MISSION_BTN_GPIO_Port GPIOA
+#define BUZZERAS_CMD_Pin GPIO_PIN_7
+#define BUZZERAS_CMD_GPIO_Port GPIOA
+#define AMS_CMD_Pin GPIO_PIN_0
+#define AMS_CMD_GPIO_Port GPIOB
+#define BUZZEREV_CMD_Pin GPIO_PIN_1
+#define BUZZEREV_CMD_GPIO_Port GPIOB
+#define IMD_CMD_Pin GPIO_PIN_2
+#define IMD_CMD_GPIO_Port GPIOB
+#define EXT_BTN_Pin GPIO_PIN_10
+#define EXT_BTN_GPIO_Port GPIOB
+#define ASB_CMD_Pin GPIO_PIN_11
+#define ASB_CMD_GPIO_Port GPIOB
+#define INVERTER_PUMP_PWM_CMD_Pin GPIO_PIN_12
+#define INVERTER_PUMP_PWM_CMD_GPIO_Port GPIOB
+#define TSOFF_CMD_Pin GPIO_PIN_13
+#define TSOFF_CMD_GPIO_Port GPIOB
+#define RTD_CMD_Pin GPIO_PIN_14
+#define RTD_CMD_GPIO_Port GPIOB
+#define LED1_Pin GPIO_PIN_15
+#define LED1_GPIO_Port GPIOB
+#define LED2_Pin GPIO_PIN_8
+#define LED2_GPIO_Port GPIOA
+#define AMI_OFF_CMD_Pin GPIO_PIN_3
+#define AMI_OFF_CMD_GPIO_Port GPIOB
+#define AMI2_CMD_Pin GPIO_PIN_4
+#define AMI2_CMD_GPIO_Port GPIOB
 #define AMI1_CMD_Pin GPIO_PIN_5
 #define AMI1_CMD_GPIO_Port GPIOB
-#define ASSI_YELLOW_CMD_Pin GPIO_PIN_7
+#define ASSI_YELLOW_CMD_Pin GPIO_PIN_6
 #define ASSI_YELLOW_CMD_GPIO_Port GPIOB
-#define ASSI_BLUE_CMD_Pin GPIO_PIN_8
+#define ASSI_BLUE_CMD_Pin GPIO_PIN_7
 #define ASSI_BLUE_CMD_GPIO_Port GPIOB
-#define BAT_FAN_PWM_CMD_Pin GPIO_PIN_0
-#define BAT_FAN_PWM_CMD_GPIO_Port GPIOE
-#define POWERTRAIN_COOLING_PWM_CMD_Pin GPIO_PIN_1
-#define POWERTRAIN_COOLING_PWM_CMD_GPIO_Port GPIOE
+#define BAT_FAN_PWM_CMD_Pin GPIO_PIN_8
+#define BAT_FAN_PWM_CMD_GPIO_Port GPIOB
+#define RADIATOR_FANS_PWM_CMD_Pin GPIO_PIN_9
+#define RADIATOR_FANS_PWM_CMD_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
+
+#define PCBVER 2
+
+// PCB ver 1 (Francesco Minichelli's original design)
+#if PCBVER == 1
 
 #define BAT_FAN_PWM_TIM htim16
 #define BAT_FAN_PWM_CH TIM_CHANNEL_1
@@ -116,6 +123,22 @@ void Error_Handler(void);
 #define ASB_MOTOR_PWM_CH TIM_CHANNEL_1
 
 #define COUNTER_TIM htim3
+
+// PCB ver 2 (the black one)
+#elif PCBVER == 2
+
+#define BAT_FAN_PWM_TIM htim16
+#define BAT_FAN_PWM_CH TIM_CHANNEL_1
+
+#define RADIATOR_FANS_PWM_TIM htim17
+#define RADIATOR_FANS_PWM_CH TIM_CHANNEL_1
+
+#define ASB_MOTOR_PWM_TIM htim15
+#define ASB_MOTOR_PWM_CH TIM_CHANNEL_1
+
+#define COUNTER_TIM htim1
+
+#endif
 
 /* USER CODE END Private defines */
 
