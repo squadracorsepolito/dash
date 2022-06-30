@@ -99,9 +99,9 @@ int main(void)
   MX_CAN_Init();
   MX_USART1_UART_Init();
   MX_TIM3_Init();
-  MX_TIM8_Init();
   MX_TIM16_Init();
   MX_TIM17_Init();
+  MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
     // Start the counter
     HAL_TIM_Base_Start_IT(&COUNTER_TIM);

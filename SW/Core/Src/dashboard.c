@@ -60,7 +60,7 @@ volatile bool NACK;
 /* PWM Variables */
 volatile uint8_t PWM_POWERTRAIN;
 volatile uint8_t PWM_BAT_FAN;
-volatile uint8_t PWM_ASB_MOTOR;
+volatile uint16_t PWM_ASB_MOTOR;
 
 /* Button short press flags */
 bool COCK_BUTTON = false;
@@ -116,17 +116,10 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     /* ASB command */
     else if ((RxHeader.StdId == ASB_CMD_ID_CAN) && (RxHeader.DLC == 1))
     {
-        if (RxData[0] <= 255)
-        {
-            // Min PWM pulse=800 (800us)
-            // Max PWM pulse=2100 (2.1ms)
-            PWM_ASB_MOTOR = RxData[0] * ((2100 - 800) / 255) + 800;
-            __HAL_TIM_SET_COMPARE(&ASB_MOTOR_PWM_TIM, ASB_MOTOR_PWM_CH, PWM_ASB_MOTOR);
-        }
-        else
-        {
-            // TODO: handle ASB error?
-        }
+        // Min PWM pulse=800 (800us)
+        // Max PWM pulse=2100 (2.1ms)
+        PWM_ASB_MOTOR = RxData[0] * ((2100 - 800) / 255) + 800;
+        __HAL_TIM_SET_COMPARE(&ASB_MOTOR_PWM_TIM, ASB_MOTOR_PWM_CH, PWM_ASB_MOTOR);
     }
     /* AS state */
     else if ((RxHeader.StdId == AS_STATE_ID_CAN) && (RxHeader.DLC == 2))
@@ -160,18 +153,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     else if ((RxHeader.StdId == PWM_CMD_ID_CAN) && (RxHeader.DLC == 2))
     {
         // Radiator fan and pump signals have been merged to make space for ASB signal.
-        if (RxData[0] <= 100)
-        {
-            // TODO: map 0-255 to PWM values
-            PWM_POWERTRAIN = RxData[0];
-            __HAL_TIM_SET_COMPARE(&POWERTRAIN_COOLING_PWM_TIM, POWERTRAIN_COOLING_PWM_CH, PWM_POWERTRAIN);
-        }
-        else if (RxData[1] <= 100)
-        {
-            // TODO: map 0-255 to PWM values
-            PWM_BAT_FAN = RxData[2];
-            __HAL_TIM_SET_COMPARE(&BAT_FAN_PWM_TIM, BAT_FAN_PWM_CH, PWM_BAT_FAN);
-        }
+        PWM_POWERTRAIN = RxData[0];
+        __HAL_TIM_SET_COMPARE(&POWERTRAIN_COOLING_PWM_TIM, POWERTRAIN_COOLING_PWM_CH, PWM_POWERTRAIN);
+
+        PWM_BAT_FAN = RxData[1];
+        __HAL_TIM_SET_COMPARE(&BAT_FAN_PWM_TIM, BAT_FAN_PWM_CH, PWM_BAT_FAN);
     }
 
     /*
@@ -406,7 +392,7 @@ void SetupDashBoard(void)
     }
 
     /*Start timer for PWM*/
-    if (HAL_TIM_PWM_Start(&ASB_MOTOR_PWM_TIM, ASB_MOTOR_PWM_CH) != HAL_OK)
+    if (HAL_TIMEx_PWMN_Start(&ASB_MOTOR_PWM_TIM, ASB_MOTOR_PWM_CH) != HAL_OK)
     {
         /* PWM generation Error */
         Error_Handler();

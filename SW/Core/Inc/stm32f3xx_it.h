@@ -59,6 +59,10 @@ void USB_LP_CAN_RX0_IRQHandler(void);
 void CAN_RX1_IRQHandler(void);
 void CAN_SCE_IRQHandler(void);
 void TIM3_IRQHandler(void);
+void TIM8_BRK_IRQHandler(void);
+void TIM8_UP_IRQHandler(void);
+void TIM8_TRG_COM_IRQHandler(void);
+void TIM8_CC_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
