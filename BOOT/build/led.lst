@@ -1,0 +1,344 @@
+ARM GAS  /tmp/ccQg2iyN.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"led.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.file 1 "Core/Src/BLT/led.c"
+  20              		.section	.text.LedBlinkInit,"ax",%progbits
+  21              		.align	1
+  22              		.global	LedBlinkInit
+  23              		.syntax unified
+  24              		.thumb
+  25              		.thumb_func
+  27              	LedBlinkInit:
+  28              	.LVL0:
+  29              	.LFB484:
+   1:Core/Src/BLT/led.c **** /************************************************************************************//**
+   2:Core/Src/BLT/led.c **** * \file         Demo/ARMCM4_STM32F3_Discovery_F303VC_TrueStudio/Boot/led.c
+   3:Core/Src/BLT/led.c **** * \brief        LED driver source file.
+   4:Core/Src/BLT/led.c **** * \ingroup      Boot_ARMCM4_STM32F3_Discovery_F303VC_TrueStudio
+   5:Core/Src/BLT/led.c **** * \internal
+   6:Core/Src/BLT/led.c **** *----------------------------------------------------------------------------------------
+   7:Core/Src/BLT/led.c **** *                          C O P Y R I G H T
+   8:Core/Src/BLT/led.c **** *----------------------------------------------------------------------------------------
+   9:Core/Src/BLT/led.c **** *   Copyright (c) 2018  by Feaser    http://www.feaser.com    All rights reserved
+  10:Core/Src/BLT/led.c **** *
+  11:Core/Src/BLT/led.c **** *----------------------------------------------------------------------------------------
+  12:Core/Src/BLT/led.c **** *                            L I C E N S E
+  13:Core/Src/BLT/led.c **** *----------------------------------------------------------------------------------------
+  14:Core/Src/BLT/led.c **** * This file is part of OpenBLT. OpenBLT is free software: you can redistribute it and/or
+  15:Core/Src/BLT/led.c **** * modify it under the terms of the GNU General Public License as published by the Free
+  16:Core/Src/BLT/led.c **** * Software Foundation, either version 3 of the License, or (at your option) any later
+  17:Core/Src/BLT/led.c **** * version.
+  18:Core/Src/BLT/led.c **** *
+  19:Core/Src/BLT/led.c **** * OpenBLT is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+  20:Core/Src/BLT/led.c **** * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  21:Core/Src/BLT/led.c **** * PURPOSE. See the GNU General Public License for more details.
+  22:Core/Src/BLT/led.c **** *
+  23:Core/Src/BLT/led.c **** * You have received a copy of the GNU General Public License along with OpenBLT. It
+  24:Core/Src/BLT/led.c **** * should be located in ".\Doc\license.html". If not, contact Feaser to obtain a copy.
+  25:Core/Src/BLT/led.c **** *
+  26:Core/Src/BLT/led.c **** * \endinternal
+  27:Core/Src/BLT/led.c **** ****************************************************************************************/
+  28:Core/Src/BLT/led.c **** 
+  29:Core/Src/BLT/led.c **** /****************************************************************************************
+ARM GAS  /tmp/ccQg2iyN.s 			page 2
+
+
+  30:Core/Src/BLT/led.c **** * Include files
+  31:Core/Src/BLT/led.c **** ****************************************************************************************/
+  32:Core/Src/BLT/led.c **** #include "BLT/boot.h"                           /* bootloader generic header            */
+  33:Core/Src/BLT/led.c **** #include "BLT/led.h"                            /* module header                        */
+  34:Core/Src/BLT/led.c **** #include "stm32f3xx.h"                          /* STM32 CPU and HAL header             */
+  35:Core/Src/BLT/led.c **** #include "main.h"                               /* Include to make LED GPIO HAL working */
+  36:Core/Src/BLT/led.c **** 
+  37:Core/Src/BLT/led.c **** 
+  38:Core/Src/BLT/led.c **** /****************************************************************************************
+  39:Core/Src/BLT/led.c **** * Local data declarations
+  40:Core/Src/BLT/led.c **** ****************************************************************************************/
+  41:Core/Src/BLT/led.c **** /** \brief Holds the desired LED blink interval time. */
+  42:Core/Src/BLT/led.c **** static blt_int32u ledBlinkIntervalMs;
+  43:Core/Src/BLT/led.c **** 
+  44:Core/Src/BLT/led.c **** 
+  45:Core/Src/BLT/led.c **** /************************************************************************************//**
+  46:Core/Src/BLT/led.c **** ** \brief     Initializes the LED blink driver.
+  47:Core/Src/BLT/led.c **** ** \param     interval_ms Specifies the desired LED blink interval time in milliseconds.
+  48:Core/Src/BLT/led.c **** ** \return    none.
+  49:Core/Src/BLT/led.c **** **
+  50:Core/Src/BLT/led.c **** ****************************************************************************************/
+  51:Core/Src/BLT/led.c **** void LedBlinkInit(blt_int16u interval_ms)
+  52:Core/Src/BLT/led.c **** {
+  30              		.loc 1 52 1 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		@ link register save eliminated.
+  53:Core/Src/BLT/led.c ****   /* store the interval time between LED toggles */
+  54:Core/Src/BLT/led.c ****   ledBlinkIntervalMs = interval_ms;
+  35              		.loc 1 54 3 view .LVU1
+  36              		.loc 1 54 22 is_stmt 0 view .LVU2
+  37 0000 014B     		ldr	r3, .L2
+  38 0002 1860     		str	r0, [r3]
+  55:Core/Src/BLT/led.c **** } /*** end of LedBlinkInit ***/
+  39              		.loc 1 55 1 view .LVU3
+  40 0004 7047     		bx	lr
+  41              	.L3:
+  42 0006 00BF     		.align	2
+  43              	.L2:
+  44 0008 00000000 		.word	ledBlinkIntervalMs
+  45              		.cfi_endproc
+  46              	.LFE484:
+  48              		.section	.text.LedBlinkTask,"ax",%progbits
+  49              		.align	1
+  50              		.global	LedBlinkTask
+  51              		.syntax unified
+  52              		.thumb
+  53              		.thumb_func
+  55              	LedBlinkTask:
+  56              	.LFB485:
+  56:Core/Src/BLT/led.c **** 
+  57:Core/Src/BLT/led.c **** 
+  58:Core/Src/BLT/led.c **** /************************************************************************************//**
+  59:Core/Src/BLT/led.c **** ** \brief     Task function for blinking the LED as a fixed timer interval.
+  60:Core/Src/BLT/led.c **** ** \return    none.
+  61:Core/Src/BLT/led.c **** **
+ARM GAS  /tmp/ccQg2iyN.s 			page 3
+
+
+  62:Core/Src/BLT/led.c **** ****************************************************************************************/
+  63:Core/Src/BLT/led.c **** void LedBlinkTask(void)
+  64:Core/Src/BLT/led.c **** {
+  57              		.loc 1 64 1 is_stmt 1 view -0
+  58              		.cfi_startproc
+  59              		@ args = 0, pretend = 0, frame = 0
+  60              		@ frame_needed = 0, uses_anonymous_args = 0
+  61 0000 08B5     		push	{r3, lr}
+  62              		.cfi_def_cfa_offset 8
+  63              		.cfi_offset 3, -8
+  64              		.cfi_offset 14, -4
+  65:Core/Src/BLT/led.c ****   static blt_bool ledOn = BLT_FALSE;
+  65              		.loc 1 65 3 view .LVU5
+  66:Core/Src/BLT/led.c ****   static blt_int32u nextBlinkEvent = 0;
+  66              		.loc 1 66 3 view .LVU6
+  67:Core/Src/BLT/led.c **** 
+  68:Core/Src/BLT/led.c ****   /* check for blink event */
+  69:Core/Src/BLT/led.c ****   if (TimerGet() >= nextBlinkEvent)
+  67              		.loc 1 69 3 view .LVU7
+  68              		.loc 1 69 7 is_stmt 0 view .LVU8
+  69 0002 FFF7FEFF 		bl	TimerGet
+  70              	.LVL1:
+  71              		.loc 1 69 18 view .LVU9
+  72 0006 174B     		ldr	r3, .L9
+  73 0008 1B68     		ldr	r3, [r3]
+  74              		.loc 1 69 6 view .LVU10
+  75 000a 9842     		cmp	r0, r3
+  76 000c 18D3     		bcc	.L4
+  70:Core/Src/BLT/led.c ****   {
+  71:Core/Src/BLT/led.c ****     /* toggle the LED state */
+  72:Core/Src/BLT/led.c ****     if (ledOn == BLT_FALSE)
+  77              		.loc 1 72 5 is_stmt 1 view .LVU11
+  78              		.loc 1 72 15 is_stmt 0 view .LVU12
+  79 000e 164B     		ldr	r3, .L9+4
+  80 0010 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  81              		.loc 1 72 8 view .LVU13
+  82 0012 B3B9     		cbnz	r3, .L6
+  73:Core/Src/BLT/led.c ****     {
+  74:Core/Src/BLT/led.c ****       ledOn = BLT_TRUE;
+  83              		.loc 1 74 7 is_stmt 1 view .LVU14
+  84              		.loc 1 74 13 is_stmt 0 view .LVU15
+  85 0014 0122     		movs	r2, #1
+  86 0016 144B     		ldr	r3, .L9+4
+  87 0018 1A70     		strb	r2, [r3]
+  75:Core/Src/BLT/led.c ****       HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
+  88              		.loc 1 75 7 is_stmt 1 view .LVU16
+  89 001a 4FF40041 		mov	r1, #32768
+  90 001e 1348     		ldr	r0, .L9+8
+  91 0020 FFF7FEFF 		bl	HAL_GPIO_WritePin
+  92              	.LVL2:
+  76:Core/Src/BLT/led.c ****       HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+  93              		.loc 1 76 7 view .LVU17
+  94 0024 0022     		movs	r2, #0
+  95 0026 4FF48071 		mov	r1, #256
+  96 002a 4FF09040 		mov	r0, #1207959552
+  97 002e FFF7FEFF 		bl	HAL_GPIO_WritePin
+  98              	.LVL3:
+ARM GAS  /tmp/ccQg2iyN.s 			page 4
+
+
+  99              	.L7:
+  77:Core/Src/BLT/led.c ****       //LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_3);
+  78:Core/Src/BLT/led.c ****     }
+  79:Core/Src/BLT/led.c ****     else
+  80:Core/Src/BLT/led.c ****     {
+  81:Core/Src/BLT/led.c ****       ledOn = BLT_FALSE;
+  82:Core/Src/BLT/led.c ****       HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+  83:Core/Src/BLT/led.c ****       HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+  84:Core/Src/BLT/led.c ****       //LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_3);
+  85:Core/Src/BLT/led.c ****     }
+  86:Core/Src/BLT/led.c ****     /* schedule the next blink event */
+  87:Core/Src/BLT/led.c ****     nextBlinkEvent = TimerGet() + ledBlinkIntervalMs;
+ 100              		.loc 1 87 5 view .LVU18
+ 101              		.loc 1 87 22 is_stmt 0 view .LVU19
+ 102 0032 FFF7FEFF 		bl	TimerGet
+ 103              	.LVL4:
+ 104              		.loc 1 87 33 view .LVU20
+ 105 0036 0E4B     		ldr	r3, .L9+12
+ 106 0038 1B68     		ldr	r3, [r3]
+ 107 003a 1844     		add	r0, r0, r3
+ 108              		.loc 1 87 20 view .LVU21
+ 109 003c 094B     		ldr	r3, .L9
+ 110 003e 1860     		str	r0, [r3]
+ 111              	.L4:
+  88:Core/Src/BLT/led.c ****   }
+  89:Core/Src/BLT/led.c **** } /*** end of LedBlinkTask ***/
+ 112              		.loc 1 89 1 view .LVU22
+ 113 0040 08BD     		pop	{r3, pc}
+ 114              	.L6:
+  81:Core/Src/BLT/led.c ****       HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+ 115              		.loc 1 81 7 is_stmt 1 view .LVU23
+  81:Core/Src/BLT/led.c ****       HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+ 116              		.loc 1 81 13 is_stmt 0 view .LVU24
+ 117 0042 0022     		movs	r2, #0
+ 118 0044 084B     		ldr	r3, .L9+4
+ 119 0046 1A70     		strb	r2, [r3]
+  82:Core/Src/BLT/led.c ****       HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+ 120              		.loc 1 82 7 is_stmt 1 view .LVU25
+ 121 0048 4FF48071 		mov	r1, #256
+ 122 004c 4FF09040 		mov	r0, #1207959552
+ 123 0050 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 124              	.LVL5:
+  83:Core/Src/BLT/led.c ****       //LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_3);
+ 125              		.loc 1 83 7 view .LVU26
+ 126 0054 0122     		movs	r2, #1
+ 127 0056 4FF48071 		mov	r1, #256
+ 128 005a 4FF09040 		mov	r0, #1207959552
+ 129 005e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 130              	.LVL6:
+ 131 0062 E6E7     		b	.L7
+ 132              	.L10:
+ 133              		.align	2
+ 134              	.L9:
+ 135 0064 00000000 		.word	nextBlinkEvent.1
+ 136 0068 00000000 		.word	ledOn.0
+ 137 006c 00040048 		.word	1207960576
+ 138 0070 00000000 		.word	ledBlinkIntervalMs
+ARM GAS  /tmp/ccQg2iyN.s 			page 5
+
+
+ 139              		.cfi_endproc
+ 140              	.LFE485:
+ 142              		.section	.text.LedBlinkExit,"ax",%progbits
+ 143              		.align	1
+ 144              		.global	LedBlinkExit
+ 145              		.syntax unified
+ 146              		.thumb
+ 147              		.thumb_func
+ 149              	LedBlinkExit:
+ 150              	.LFB486:
+  90:Core/Src/BLT/led.c **** 
+  91:Core/Src/BLT/led.c **** 
+  92:Core/Src/BLT/led.c **** /************************************************************************************//**
+  93:Core/Src/BLT/led.c **** ** \brief     Cleans up the LED blink driver. This is intended to be used upon program
+  94:Core/Src/BLT/led.c **** **            exit.
+  95:Core/Src/BLT/led.c **** ** \return    none.
+  96:Core/Src/BLT/led.c **** **
+  97:Core/Src/BLT/led.c **** ****************************************************************************************/
+  98:Core/Src/BLT/led.c **** void LedBlinkExit(void)
+  99:Core/Src/BLT/led.c **** {
+ 151              		.loc 1 99 1 view -0
+ 152              		.cfi_startproc
+ 153              		@ args = 0, pretend = 0, frame = 0
+ 154              		@ frame_needed = 0, uses_anonymous_args = 0
+ 155 0000 10B5     		push	{r4, lr}
+ 156              		.cfi_def_cfa_offset 8
+ 157              		.cfi_offset 4, -8
+ 158              		.cfi_offset 14, -4
+ 100:Core/Src/BLT/led.c ****   /* turn the LED off */
+ 101:Core/Src/BLT/led.c ****   HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
+ 159              		.loc 1 101 3 view .LVU28
+ 160 0002 074C     		ldr	r4, .L13
+ 161 0004 0022     		movs	r2, #0
+ 162 0006 4FF40041 		mov	r1, #32768
+ 163 000a 2046     		mov	r0, r4
+ 164 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 165              	.LVL7:
+ 102:Core/Src/BLT/led.c ****   HAL_GPIO_WritePin(LED1_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+ 166              		.loc 1 102 3 view .LVU29
+ 167 0010 0022     		movs	r2, #0
+ 168 0012 4FF48071 		mov	r1, #256
+ 169 0016 2046     		mov	r0, r4
+ 170 0018 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 171              	.LVL8:
+ 103:Core/Src/BLT/led.c ****   //LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_3);
+ 104:Core/Src/BLT/led.c **** } /*** end of LedBlinkExit ***/
+ 172              		.loc 1 104 1 is_stmt 0 view .LVU30
+ 173 001c 10BD     		pop	{r4, pc}
+ 174              	.L14:
+ 175 001e 00BF     		.align	2
+ 176              	.L13:
+ 177 0020 00040048 		.word	1207960576
+ 178              		.cfi_endproc
+ 179              	.LFE486:
+ 181              		.section	.bss.ledOn.0,"aw",%nobits
+ 184              	ledOn.0:
+ 185 0000 00       		.space	1
+ARM GAS  /tmp/ccQg2iyN.s 			page 6
+
+
+ 186              		.section	.bss.nextBlinkEvent.1,"aw",%nobits
+ 187              		.align	2
+ 190              	nextBlinkEvent.1:
+ 191 0000 00000000 		.space	4
+ 192              		.section	.bss.ledBlinkIntervalMs,"aw",%nobits
+ 193              		.align	2
+ 196              	ledBlinkIntervalMs:
+ 197 0000 00000000 		.space	4
+ 198              		.text
+ 199              	.Letext0:
+ 200              		.file 2 "Core/Inc/BLT/types.h"
+ 201              		.file 3 "/usr/arm-none-eabi/include/machine/_default_types.h"
+ 202              		.file 4 "/usr/arm-none-eabi/include/sys/_stdint.h"
+ 203              		.file 5 "Drivers/CMSIS/Device/ST/STM32F3xx/Include/stm32f302x8.h"
+ 204              		.file 6 "Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_gpio.h"
+ 205              		.file 7 "Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_ll_dma.h"
+ 206              		.file 8 "Core/Inc/BLT/timer.h"
+ARM GAS  /tmp/ccQg2iyN.s 			page 7
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 led.c
+     /tmp/ccQg2iyN.s:21     .text.LedBlinkInit:0000000000000000 $t
+     /tmp/ccQg2iyN.s:27     .text.LedBlinkInit:0000000000000000 LedBlinkInit
+     /tmp/ccQg2iyN.s:44     .text.LedBlinkInit:0000000000000008 $d
+     /tmp/ccQg2iyN.s:196    .bss.ledBlinkIntervalMs:0000000000000000 ledBlinkIntervalMs
+     /tmp/ccQg2iyN.s:49     .text.LedBlinkTask:0000000000000000 $t
+     /tmp/ccQg2iyN.s:55     .text.LedBlinkTask:0000000000000000 LedBlinkTask
+     /tmp/ccQg2iyN.s:135    .text.LedBlinkTask:0000000000000064 $d
+     /tmp/ccQg2iyN.s:190    .bss.nextBlinkEvent.1:0000000000000000 nextBlinkEvent.1
+     /tmp/ccQg2iyN.s:184    .bss.ledOn.0:0000000000000000 ledOn.0
+     /tmp/ccQg2iyN.s:143    .text.LedBlinkExit:0000000000000000 $t
+     /tmp/ccQg2iyN.s:149    .text.LedBlinkExit:0000000000000000 LedBlinkExit
+     /tmp/ccQg2iyN.s:177    .text.LedBlinkExit:0000000000000020 $d
+     /tmp/ccQg2iyN.s:185    .bss.ledOn.0:0000000000000000 $d
+     /tmp/ccQg2iyN.s:187    .bss.nextBlinkEvent.1:0000000000000000 $d
+     /tmp/ccQg2iyN.s:193    .bss.ledBlinkIntervalMs:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+TimerGet
+HAL_GPIO_WritePin

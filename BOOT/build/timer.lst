@@ -1,0 +1,407 @@
+ARM GAS  /tmp/cc0jInSw.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"timer.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.file 1 "Core/Src/BLT/timer.c"
+  20              		.section	.text.TimerReset,"ax",%progbits
+  21              		.align	1
+  22              		.global	TimerReset
+  23              		.syntax unified
+  24              		.thumb
+  25              		.thumb_func
+  27              	TimerReset:
+  28              	.LFB124:
+   1:Core/Src/BLT/timer.c **** /************************************************************************************//**
+   2:Core/Src/BLT/timer.c **** * \file         Source/ARMCM4_STM32F3/timer.c
+   3:Core/Src/BLT/timer.c **** * \brief        Bootloader timer driver source file.
+   4:Core/Src/BLT/timer.c **** * \ingroup      Target_ARMCM4_STM32F3
+   5:Core/Src/BLT/timer.c **** * \internal
+   6:Core/Src/BLT/timer.c **** *----------------------------------------------------------------------------------------
+   7:Core/Src/BLT/timer.c **** *                          C O P Y R I G H T
+   8:Core/Src/BLT/timer.c **** *----------------------------------------------------------------------------------------
+   9:Core/Src/BLT/timer.c **** *   Copyright (c) 2016  by Feaser    http://www.feaser.com    All rights reserved
+  10:Core/Src/BLT/timer.c **** *
+  11:Core/Src/BLT/timer.c **** *----------------------------------------------------------------------------------------
+  12:Core/Src/BLT/timer.c **** *                            L I C E N S E
+  13:Core/Src/BLT/timer.c **** *----------------------------------------------------------------------------------------
+  14:Core/Src/BLT/timer.c **** * This file is part of OpenBLT. OpenBLT is free software: you can redistribute it and/or
+  15:Core/Src/BLT/timer.c **** * modify it under the terms of the GNU General Public License as published by the Free
+  16:Core/Src/BLT/timer.c **** * Software Foundation, either version 3 of the License, or (at your option) any later
+  17:Core/Src/BLT/timer.c **** * version.
+  18:Core/Src/BLT/timer.c **** *
+  19:Core/Src/BLT/timer.c **** * OpenBLT is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+  20:Core/Src/BLT/timer.c **** * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  21:Core/Src/BLT/timer.c **** * PURPOSE. See the GNU General Public License for more details.
+  22:Core/Src/BLT/timer.c **** *
+  23:Core/Src/BLT/timer.c **** * You have received a copy of the GNU General Public License along with OpenBLT. It
+  24:Core/Src/BLT/timer.c **** * should be located in ".\Doc\license.html". If not, contact Feaser to obtain a copy.
+  25:Core/Src/BLT/timer.c **** *
+  26:Core/Src/BLT/timer.c **** * \endinternal
+  27:Core/Src/BLT/timer.c **** ****************************************************************************************/
+  28:Core/Src/BLT/timer.c **** 
+  29:Core/Src/BLT/timer.c **** /****************************************************************************************
+  30:Core/Src/BLT/timer.c **** * Include files
+ARM GAS  /tmp/cc0jInSw.s 			page 2
+
+
+  31:Core/Src/BLT/timer.c **** ****************************************************************************************/
+  32:Core/Src/BLT/timer.c **** #include "BLT/boot.h"                                /* bootloader generic header          */
+  33:Core/Src/BLT/timer.c **** #include "stm32f3xx.h"                           /* STM32 CPU and HAL header           */
+  34:Core/Src/BLT/timer.c **** 
+  35:Core/Src/BLT/timer.c **** 
+  36:Core/Src/BLT/timer.c **** /****************************************************************************************
+  37:Core/Src/BLT/timer.c **** * Local data declarations
+  38:Core/Src/BLT/timer.c **** ****************************************************************************************/
+  39:Core/Src/BLT/timer.c **** /** \brief Local variable for storing the number of milliseconds that have elapsed since
+  40:Core/Src/BLT/timer.c ****  *         startup.
+  41:Core/Src/BLT/timer.c ****  */
+  42:Core/Src/BLT/timer.c **** static blt_int32u millisecond_counter;
+  43:Core/Src/BLT/timer.c **** 
+  44:Core/Src/BLT/timer.c **** 
+  45:Core/Src/BLT/timer.c **** /************************************************************************************//**
+  46:Core/Src/BLT/timer.c **** ** \brief     Initializes the polling based millisecond timer driver.
+  47:Core/Src/BLT/timer.c **** ** \return    none.
+  48:Core/Src/BLT/timer.c **** **
+  49:Core/Src/BLT/timer.c **** ****************************************************************************************/
+  50:Core/Src/BLT/timer.c **** void TimerInit(void)
+  51:Core/Src/BLT/timer.c **** {
+  52:Core/Src/BLT/timer.c ****   /* Reset the timer configuration. */
+  53:Core/Src/BLT/timer.c ****   TimerReset();
+  54:Core/Src/BLT/timer.c **** 
+  55:Core/Src/BLT/timer.c ****   /* Configure the systick frequency as a 1 ms event generator. */
+  56:Core/Src/BLT/timer.c ****   SysTick->LOAD = BOOT_CPU_SYSTEM_SPEED_KHZ - 1;
+  57:Core/Src/BLT/timer.c ****   /* Reset the current counter value. */
+  58:Core/Src/BLT/timer.c ****   SysTick->VAL = 0;
+  59:Core/Src/BLT/timer.c ****   /* Select core clock as source and enable the timer. */
+  60:Core/Src/BLT/timer.c ****   SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk;
+  61:Core/Src/BLT/timer.c ****   /* Reset the millisecond counter value. */
+  62:Core/Src/BLT/timer.c ****   millisecond_counter = 0;
+  63:Core/Src/BLT/timer.c **** } /*** end of TimerInit ***/
+  64:Core/Src/BLT/timer.c **** 
+  65:Core/Src/BLT/timer.c **** 
+  66:Core/Src/BLT/timer.c **** /************************************************************************************//**
+  67:Core/Src/BLT/timer.c **** ** \brief     Reset the timer by placing the timer back into it's default reset
+  68:Core/Src/BLT/timer.c **** **            configuration.
+  69:Core/Src/BLT/timer.c **** ** \return    none.
+  70:Core/Src/BLT/timer.c **** **
+  71:Core/Src/BLT/timer.c **** ****************************************************************************************/
+  72:Core/Src/BLT/timer.c **** void TimerReset(void)
+  73:Core/Src/BLT/timer.c **** {
+  29              		.loc 1 73 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  74:Core/Src/BLT/timer.c ****   /* Set the systick's registers back into the default reset value. */
+  75:Core/Src/BLT/timer.c ****   SysTick->CTRL = 0;
+  34              		.loc 1 75 3 view .LVU1
+  35              		.loc 1 75 17 is_stmt 0 view .LVU2
+  36 0000 4FF0E023 		mov	r3, #-536813568
+  37 0004 0022     		movs	r2, #0
+  38 0006 1A61     		str	r2, [r3, #16]
+  76:Core/Src/BLT/timer.c ****   SysTick->LOAD = 0;
+  39              		.loc 1 76 3 is_stmt 1 view .LVU3
+ARM GAS  /tmp/cc0jInSw.s 			page 3
+
+
+  40              		.loc 1 76 17 is_stmt 0 view .LVU4
+  41 0008 5A61     		str	r2, [r3, #20]
+  77:Core/Src/BLT/timer.c ****   SysTick->VAL = 0;
+  42              		.loc 1 77 3 is_stmt 1 view .LVU5
+  43              		.loc 1 77 16 is_stmt 0 view .LVU6
+  44 000a 9A61     		str	r2, [r3, #24]
+  78:Core/Src/BLT/timer.c **** } /* end of TimerReset */
+  45              		.loc 1 78 1 view .LVU7
+  46 000c 7047     		bx	lr
+  47              		.cfi_endproc
+  48              	.LFE124:
+  50              		.section	.text.TimerInit,"ax",%progbits
+  51              		.align	1
+  52              		.global	TimerInit
+  53              		.syntax unified
+  54              		.thumb
+  55              		.thumb_func
+  57              	TimerInit:
+  58              	.LFB123:
+  51:Core/Src/BLT/timer.c ****   /* Reset the timer configuration. */
+  59              		.loc 1 51 1 is_stmt 1 view -0
+  60              		.cfi_startproc
+  61              		@ args = 0, pretend = 0, frame = 0
+  62              		@ frame_needed = 0, uses_anonymous_args = 0
+  63 0000 08B5     		push	{r3, lr}
+  64              		.cfi_def_cfa_offset 8
+  65              		.cfi_offset 3, -8
+  66              		.cfi_offset 14, -4
+  53:Core/Src/BLT/timer.c **** 
+  67              		.loc 1 53 3 view .LVU9
+  68 0002 FFF7FEFF 		bl	TimerReset
+  69              	.LVL0:
+  56:Core/Src/BLT/timer.c ****   /* Reset the current counter value. */
+  70              		.loc 1 56 3 view .LVU10
+  56:Core/Src/BLT/timer.c ****   /* Reset the current counter value. */
+  71              		.loc 1 56 17 is_stmt 0 view .LVU11
+  72 0006 4FF0E023 		mov	r3, #-536813568
+  73 000a 044A     		ldr	r2, .L4
+  74 000c 5A61     		str	r2, [r3, #20]
+  58:Core/Src/BLT/timer.c ****   /* Select core clock as source and enable the timer. */
+  75              		.loc 1 58 3 is_stmt 1 view .LVU12
+  58:Core/Src/BLT/timer.c ****   /* Select core clock as source and enable the timer. */
+  76              		.loc 1 58 16 is_stmt 0 view .LVU13
+  77 000e 0022     		movs	r2, #0
+  78 0010 9A61     		str	r2, [r3, #24]
+  60:Core/Src/BLT/timer.c ****   /* Reset the millisecond counter value. */
+  79              		.loc 1 60 3 is_stmt 1 view .LVU14
+  60:Core/Src/BLT/timer.c ****   /* Reset the millisecond counter value. */
+  80              		.loc 1 60 17 is_stmt 0 view .LVU15
+  81 0012 0521     		movs	r1, #5
+  82 0014 1961     		str	r1, [r3, #16]
+  62:Core/Src/BLT/timer.c **** } /*** end of TimerInit ***/
+  83              		.loc 1 62 3 is_stmt 1 view .LVU16
+  62:Core/Src/BLT/timer.c **** } /*** end of TimerInit ***/
+  84              		.loc 1 62 23 is_stmt 0 view .LVU17
+  85 0016 024B     		ldr	r3, .L4+4
+  86 0018 1A60     		str	r2, [r3]
+ARM GAS  /tmp/cc0jInSw.s 			page 4
+
+
+  63:Core/Src/BLT/timer.c **** 
+  87              		.loc 1 63 1 view .LVU18
+  88 001a 08BD     		pop	{r3, pc}
+  89              	.L5:
+  90              		.align	2
+  91              	.L4:
+  92 001c 3F190100 		.word	71999
+  93 0020 00000000 		.word	millisecond_counter
+  94              		.cfi_endproc
+  95              	.LFE123:
+  97              		.section	.text.TimerUpdate,"ax",%progbits
+  98              		.align	1
+  99              		.global	TimerUpdate
+ 100              		.syntax unified
+ 101              		.thumb
+ 102              		.thumb_func
+ 104              	TimerUpdate:
+ 105              	.LFB125:
+  79:Core/Src/BLT/timer.c **** 
+  80:Core/Src/BLT/timer.c **** 
+  81:Core/Src/BLT/timer.c **** /************************************************************************************//**
+  82:Core/Src/BLT/timer.c **** ** \brief     Updates the millisecond timer.
+  83:Core/Src/BLT/timer.c **** ** \return    none.
+  84:Core/Src/BLT/timer.c **** **
+  85:Core/Src/BLT/timer.c **** ****************************************************************************************/
+  86:Core/Src/BLT/timer.c **** void TimerUpdate(void)
+  87:Core/Src/BLT/timer.c **** {
+ 106              		.loc 1 87 1 is_stmt 1 view -0
+ 107              		.cfi_startproc
+ 108              		@ args = 0, pretend = 0, frame = 0
+ 109              		@ frame_needed = 0, uses_anonymous_args = 0
+ 110              		@ link register save eliminated.
+  88:Core/Src/BLT/timer.c ****   /* Check if the millisecond event occurred. */
+  89:Core/Src/BLT/timer.c ****   if ((SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk) != 0)
+ 111              		.loc 1 89 3 view .LVU20
+ 112              		.loc 1 89 15 is_stmt 0 view .LVU21
+ 113 0000 4FF0E023 		mov	r3, #-536813568
+ 114 0004 1B69     		ldr	r3, [r3, #16]
+ 115              		.loc 1 89 6 view .LVU22
+ 116 0006 13F4803F 		tst	r3, #65536
+ 117 000a 03D0     		beq	.L6
+  90:Core/Src/BLT/timer.c ****   {
+  91:Core/Src/BLT/timer.c ****     /* Increment the millisecond counter. */
+  92:Core/Src/BLT/timer.c ****     millisecond_counter++;
+ 118              		.loc 1 92 5 is_stmt 1 view .LVU23
+ 119              		.loc 1 92 24 is_stmt 0 view .LVU24
+ 120 000c 024A     		ldr	r2, .L8
+ 121 000e 1368     		ldr	r3, [r2]
+ 122 0010 0133     		adds	r3, r3, #1
+ 123 0012 1360     		str	r3, [r2]
+ 124              	.L6:
+  93:Core/Src/BLT/timer.c ****   }
+  94:Core/Src/BLT/timer.c **** } /*** end of TimerUpdate ***/
+ 125              		.loc 1 94 1 view .LVU25
+ 126 0014 7047     		bx	lr
+ 127              	.L9:
+ 128 0016 00BF     		.align	2
+ARM GAS  /tmp/cc0jInSw.s 			page 5
+
+
+ 129              	.L8:
+ 130 0018 00000000 		.word	millisecond_counter
+ 131              		.cfi_endproc
+ 132              	.LFE125:
+ 134              		.section	.text.TimerGet,"ax",%progbits
+ 135              		.align	1
+ 136              		.global	TimerGet
+ 137              		.syntax unified
+ 138              		.thumb
+ 139              		.thumb_func
+ 141              	TimerGet:
+ 142              	.LFB126:
+  95:Core/Src/BLT/timer.c **** 
+  96:Core/Src/BLT/timer.c **** 
+  97:Core/Src/BLT/timer.c **** /************************************************************************************//**
+  98:Core/Src/BLT/timer.c **** ** \brief     Obtains the counter value of the millisecond timer.
+  99:Core/Src/BLT/timer.c **** ** \return    Current value of the millisecond timer.
+ 100:Core/Src/BLT/timer.c **** **
+ 101:Core/Src/BLT/timer.c **** ****************************************************************************************/
+ 102:Core/Src/BLT/timer.c **** blt_int32u TimerGet(void)
+ 103:Core/Src/BLT/timer.c **** {
+ 143              		.loc 1 103 1 is_stmt 1 view -0
+ 144              		.cfi_startproc
+ 145              		@ args = 0, pretend = 0, frame = 0
+ 146              		@ frame_needed = 0, uses_anonymous_args = 0
+ 147 0000 08B5     		push	{r3, lr}
+ 148              		.cfi_def_cfa_offset 8
+ 149              		.cfi_offset 3, -8
+ 150              		.cfi_offset 14, -4
+ 104:Core/Src/BLT/timer.c ****   /* Updating timer here allows this function to be called in a loop with timeout
+ 105:Core/Src/BLT/timer.c ****    * detection.
+ 106:Core/Src/BLT/timer.c ****    */
+ 107:Core/Src/BLT/timer.c ****   TimerUpdate();
+ 151              		.loc 1 107 3 view .LVU27
+ 152 0002 FFF7FEFF 		bl	TimerUpdate
+ 153              	.LVL1:
+ 108:Core/Src/BLT/timer.c ****   /* Read and return the amount of milliseconds that passed since initialization. */
+ 109:Core/Src/BLT/timer.c ****   return millisecond_counter;
+ 154              		.loc 1 109 3 view .LVU28
+ 110:Core/Src/BLT/timer.c **** } /*** end of TimerGet ***/
+ 155              		.loc 1 110 1 is_stmt 0 view .LVU29
+ 156 0006 014B     		ldr	r3, .L12
+ 157 0008 1868     		ldr	r0, [r3]
+ 158 000a 08BD     		pop	{r3, pc}
+ 159              	.L13:
+ 160              		.align	2
+ 161              	.L12:
+ 162 000c 00000000 		.word	millisecond_counter
+ 163              		.cfi_endproc
+ 164              	.LFE126:
+ 166              		.section	.text.HAL_GetTick,"ax",%progbits
+ 167              		.align	1
+ 168              		.global	HAL_GetTick
+ 169              		.syntax unified
+ 170              		.thumb
+ 171              		.thumb_func
+ 173              	HAL_GetTick:
+ARM GAS  /tmp/cc0jInSw.s 			page 6
+
+
+ 174              	.LFB127:
+ 111:Core/Src/BLT/timer.c **** 
+ 112:Core/Src/BLT/timer.c **** 
+ 113:Core/Src/BLT/timer.c **** /************************************************************************************//**
+ 114:Core/Src/BLT/timer.c **** ** \brief     Override for the HAL driver's GetTick() functionality. This is needed
+ 115:Core/Src/BLT/timer.c **** **            because the bootloader doesn't use interrupts, but the HAL's tick
+ 116:Core/Src/BLT/timer.c **** **            functionality assumes that it does. This will cause the HAL_Delay()
+ 117:Core/Src/BLT/timer.c **** **            function to not work properly. As a result of this override, the HAL's
+ 118:Core/Src/BLT/timer.c **** **            tick functionality works in polling mode.
+ 119:Core/Src/BLT/timer.c **** ** \return    Current value of the millisecond timer.
+ 120:Core/Src/BLT/timer.c **** **
+ 121:Core/Src/BLT/timer.c **** ****************************************************************************************/
+ 122:Core/Src/BLT/timer.c **** uint32_t HAL_GetTick(void)
+ 123:Core/Src/BLT/timer.c **** {
+ 175              		.loc 1 123 1 is_stmt 1 view -0
+ 176              		.cfi_startproc
+ 177              		@ args = 0, pretend = 0, frame = 0
+ 178              		@ frame_needed = 0, uses_anonymous_args = 0
+ 179 0000 08B5     		push	{r3, lr}
+ 180              		.cfi_def_cfa_offset 8
+ 181              		.cfi_offset 3, -8
+ 182              		.cfi_offset 14, -4
+ 124:Core/Src/BLT/timer.c ****   /* Link to the bootloader's 1ms timer. */
+ 125:Core/Src/BLT/timer.c ****   return TimerGet();
+ 183              		.loc 1 125 3 view .LVU31
+ 184              		.loc 1 125 10 is_stmt 0 view .LVU32
+ 185 0002 FFF7FEFF 		bl	TimerGet
+ 186              	.LVL2:
+ 126:Core/Src/BLT/timer.c **** } /*** end of HAL_GetTick ***/
+ 187              		.loc 1 126 1 view .LVU33
+ 188 0006 08BD     		pop	{r3, pc}
+ 189              		.cfi_endproc
+ 190              	.LFE127:
+ 192              		.section	.text.SysTick_Handler,"ax",%progbits
+ 193              		.align	1
+ 194              		.weak	SysTick_Handler
+ 195              		.syntax unified
+ 196              		.thumb
+ 197              		.thumb_func
+ 199              	SysTick_Handler:
+ 200              	.LFB128:
+ 127:Core/Src/BLT/timer.c **** 
+ 128:Core/Src/BLT/timer.c **** 
+ 129:Core/Src/BLT/timer.c **** /************************************************************************************//**
+ 130:Core/Src/BLT/timer.c **** ** \brief     This function handles the SysTick interrupt. The HAL driver is initialized
+ 131:Core/Src/BLT/timer.c **** **            before this timer driver. The HAL driver configures the SysTick for
+ 132:Core/Src/BLT/timer.c **** **            interrupt driven mode, which is afterwards disabled by the timer driver
+ 133:Core/Src/BLT/timer.c **** **            initialization. It is theoretically possible that the SysTick interrupt
+ 134:Core/Src/BLT/timer.c **** **            still fires before the timer driver disables it. Therefore the handler
+ 135:Core/Src/BLT/timer.c **** **            is implemented here. If not, then the default handler from cstart.s is
+ 136:Core/Src/BLT/timer.c **** **            used, which hangs the system.
+ 137:Core/Src/BLT/timer.c **** ** \return    none.
+ 138:Core/Src/BLT/timer.c **** **
+ 139:Core/Src/BLT/timer.c **** ****************************************************************************************/
+ 140:Core/Src/BLT/timer.c **** __weak void SysTick_Handler(void)
+ 141:Core/Src/BLT/timer.c **** {
+ 201              		.loc 1 141 1 is_stmt 1 view -0
+ARM GAS  /tmp/cc0jInSw.s 			page 7
+
+
+ 202              		.cfi_startproc
+ 203              		@ args = 0, pretend = 0, frame = 0
+ 204              		@ frame_needed = 0, uses_anonymous_args = 0
+ 205              		@ link register save eliminated.
+ 142:Core/Src/BLT/timer.c ****   /* Nothing to do here. */
+ 143:Core/Src/BLT/timer.c **** } /*** end of SysTick_Handler ***/
+ 206              		.loc 1 143 1 view .LVU35
+ 207 0000 7047     		bx	lr
+ 208              		.cfi_endproc
+ 209              	.LFE128:
+ 211              		.section	.bss.millisecond_counter,"aw",%nobits
+ 212              		.align	2
+ 215              	millisecond_counter:
+ 216 0000 00000000 		.space	4
+ 217              		.text
+ 218              	.Letext0:
+ 219              		.file 2 "Core/Inc/BLT/types.h"
+ 220              		.file 3 "/usr/arm-none-eabi/include/machine/_default_types.h"
+ 221              		.file 4 "/usr/arm-none-eabi/include/sys/_stdint.h"
+ 222              		.file 5 "Drivers/CMSIS/Include/core_cm4.h"
+ARM GAS  /tmp/cc0jInSw.s 			page 8
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 timer.c
+     /tmp/cc0jInSw.s:21     .text.TimerReset:0000000000000000 $t
+     /tmp/cc0jInSw.s:27     .text.TimerReset:0000000000000000 TimerReset
+     /tmp/cc0jInSw.s:51     .text.TimerInit:0000000000000000 $t
+     /tmp/cc0jInSw.s:57     .text.TimerInit:0000000000000000 TimerInit
+     /tmp/cc0jInSw.s:92     .text.TimerInit:000000000000001c $d
+     /tmp/cc0jInSw.s:215    .bss.millisecond_counter:0000000000000000 millisecond_counter
+     /tmp/cc0jInSw.s:98     .text.TimerUpdate:0000000000000000 $t
+     /tmp/cc0jInSw.s:104    .text.TimerUpdate:0000000000000000 TimerUpdate
+     /tmp/cc0jInSw.s:130    .text.TimerUpdate:0000000000000018 $d
+     /tmp/cc0jInSw.s:135    .text.TimerGet:0000000000000000 $t
+     /tmp/cc0jInSw.s:141    .text.TimerGet:0000000000000000 TimerGet
+     /tmp/cc0jInSw.s:162    .text.TimerGet:000000000000000c $d
+     /tmp/cc0jInSw.s:167    .text.HAL_GetTick:0000000000000000 $t
+     /tmp/cc0jInSw.s:173    .text.HAL_GetTick:0000000000000000 HAL_GetTick
+     /tmp/cc0jInSw.s:193    .text.SysTick_Handler:0000000000000000 $t
+     /tmp/cc0jInSw.s:199    .text.SysTick_Handler:0000000000000000 SysTick_Handler
+     /tmp/cc0jInSw.s:212    .bss.millisecond_counter:0000000000000000 $d
+
+NO UNDEFINED SYMBOLS
