@@ -72,16 +72,16 @@ void Error_Handler(void);
 #define MISSION_BTN_GPIO_Port GPIOA
 #define BUZZERAS_CMD_Pin GPIO_PIN_7
 #define BUZZERAS_CMD_GPIO_Port GPIOA
-#define AMS_CMD_Pin GPIO_PIN_0
-#define AMS_CMD_GPIO_Port GPIOB
+#define AMS_ERR_CMD_Pin GPIO_PIN_0
+#define AMS_ERR_CMD_GPIO_Port GPIOB
 #define BUZZEREV_CMD_Pin GPIO_PIN_1
 #define BUZZEREV_CMD_GPIO_Port GPIOB
-#define IMD_CMD_Pin GPIO_PIN_2
-#define IMD_CMD_GPIO_Port GPIOB
+#define IMD_ERR_CMD_Pin GPIO_PIN_2
+#define IMD_ERR_CMD_GPIO_Port GPIOB
 #define EXT_BTN_Pin GPIO_PIN_10
 #define EXT_BTN_GPIO_Port GPIOB
-#define ASB_CMD_Pin GPIO_PIN_11
-#define ASB_CMD_GPIO_Port GPIOB
+#define ASB_ERR_CMD_Pin GPIO_PIN_11
+#define ASB_ERR_CMD_GPIO_Port GPIOB
 #define INVERTER_PUMP_PWM_CMD_Pin GPIO_PIN_12
 #define INVERTER_PUMP_PWM_CMD_GPIO_Port GPIOB
 #define TSOFF_CMD_Pin GPIO_PIN_13
@@ -136,7 +136,10 @@ void Error_Handler(void);
 #define ASB_MOTOR_PWM_TIM htim15
 #define ASB_MOTOR_PWM_CH TIM_CHANNEL_1
 
-#define COUNTER_TIM htim1
+#define INVERTER_PUMP_TIM htim1
+#define INVERTER_PUMP_CH TIM_CHANNEL_1
+
+#define COUNTER_TIM htim2
 
 #endif
 

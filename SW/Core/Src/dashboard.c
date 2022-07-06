@@ -58,9 +58,14 @@ volatile bool IDLE_ACK;
 volatile bool NACK;
 
 /* PWM Variables */
-volatile uint8_t PWM_POWERTRAIN;
 volatile uint8_t PWM_BAT_FAN;
 volatile uint8_t PWM_ASB_MOTOR;
+#if PCBVER == 2
+volatile uint8_t PWM_INVERTER_PUMP;
+volatile uint8_t PWM_RADIATOR_FAN;
+#elif PCBVER == 1
+volatile uint8_t PWM_POWERTRAIN;
+#endif
 
 /* Button short press flags */
 bool COCK_BUTTON = false;
@@ -157,25 +162,29 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
         }
     }
     /* Cooling Command */
-    else if ((RxHeader.StdId == PWM_CMD_ID_CAN) && (RxHeader.DLC == 2))
+    else if ((RxHeader.StdId == PWM_CMD_ID_CAN) && (RxHeader.DLC == 3 || RxHeader.DLC == 2))
     {
         // Radiator fan and pump signals have been merged to make space for ASB signal.
-        if (RxData[0] <= 100)
+#if PCBVER == 1
+        PWM_POWERTRAIN = RxData[0];
+        __HAL_TIM_SET_COMPARE(&POWERTRAIN_COOLING_PWM_TIM, POWERTRAIN_COOLING_PWM_CH, PWM_POWERTRAIN);
+#elif PCBVER == 2
+        PWM_RADIATOR_FAN = RxData[0];
+        __HAL_TIM_SET_COMPARE(&RADIATOR_FANS_PWM_TIM, RADIATOR_FANS_PWM_CH, PWM_RADIATOR_FAN);
+        if (RxHeader.DLC == 2)
         {
-            // TODO: map 0-255 to PWM values
-            PWM_POWERTRAIN = RxData[0];
-#ifdef POWERTRAIN_COOLING_PWM_TIM
-            __HAL_TIM_SET_COMPARE(&POWERTRAIN_COOLING_PWM_TIM, POWERTRAIN_COOLING_PWM_CH, PWM_POWERTRAIN);
-#else
-            __HAL_TIM_SET_COMPARE(&RADIATOR_FANS_PWM_TIM, RADIATOR_FANS_PWM_CH, PWM_POWERTRAIN);
+            // This signal has to be bit-banged because Francesco Minichelli is stupid
+            PWM_INVERTER_PUMP = RxData[0];
+        }
+        else if (RxHeader.DLC == 3)
+        {
+            // This signal has to be bit-banged because Francesco Minichelli is stupid
+            PWM_INVERTER_PUMP = RxData[2];
+        }
 #endif
-        }
-        else if (RxData[1] <= 100)
-        {
-            // TODO: map 0-255 to PWM values
-            PWM_BAT_FAN = RxData[2];
-            __HAL_TIM_SET_COMPARE(&BAT_FAN_PWM_TIM, BAT_FAN_PWM_CH, PWM_BAT_FAN);
-        }
+        // TODO: map 0-255 to PWM values
+        PWM_BAT_FAN = RxData[1];
+        __HAL_TIM_SET_COMPARE(&BAT_FAN_PWM_TIM, BAT_FAN_PWM_CH, PWM_BAT_FAN);
     }
 
     /*
@@ -199,10 +208,10 @@ void InitDashBoard()
 
     // Turn on all LEDs
     HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(ASB_CMD_GPIO_Port, ASB_CMD_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(AMS_CMD_GPIO_Port, AMS_CMD_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ASB_ERR_CMD_GPIO_Port, ASB_ERR_CMD_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(AMS_ERR_CMD_GPIO_Port, AMS_ERR_CMD_Pin, GPIO_PIN_SET);
     HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(IMD_CMD_GPIO_Port, IMD_CMD_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(IMD_ERR_CMD_GPIO_Port, IMD_ERR_CMD_Pin, GPIO_PIN_SET);
 
     mission_set(MISSION_NO);
     mission_run();
@@ -373,20 +382,20 @@ void UpdateCockpitLed(uint32_t delay_100us)
 
     if (delay_fun(&delay_100us_last, delay_100us))
     {
-        HAL_GPIO_WritePin(ASB_CMD_GPIO_Port, ASB_CMD_Pin, ASB_ERR);
+        HAL_GPIO_WritePin(ASB_ERR_CMD_GPIO_Port, ASB_ERR_CMD_Pin, ASB_ERR);
 
         if (boards_timeouts & WDG_BOARD_TLB)
         {
             // CAN timeout. everything is bad
-            HAL_GPIO_WritePin(AMS_CMD_GPIO_Port, AMS_CMD_Pin, ON);
+            HAL_GPIO_WritePin(AMS_ERR_CMD_GPIO_Port, AMS_ERR_CMD_Pin, ON);
             HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, OFF);
-            HAL_GPIO_WritePin(IMD_CMD_GPIO_Port, IMD_CMD_Pin, ON);
+            HAL_GPIO_WritePin(IMD_ERR_CMD_GPIO_Port, IMD_ERR_CMD_Pin, ON);
         }
         else
         {
-            HAL_GPIO_WritePin(AMS_CMD_GPIO_Port, AMS_CMD_Pin, BMS_ERR);
+            HAL_GPIO_WritePin(AMS_ERR_CMD_GPIO_Port, AMS_ERR_CMD_Pin, BMS_ERR);
             HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, TSOFF);
-            HAL_GPIO_WritePin(IMD_CMD_GPIO_Port, IMD_CMD_Pin, IMD_ERR);
+            HAL_GPIO_WritePin(IMD_ERR_CMD_GPIO_Port, IMD_ERR_CMD_Pin, IMD_ERR);
         }
     }
 }
@@ -396,10 +405,15 @@ void SetupDashBoard(void)
 {
 
 /*Start timer for PWM*/
-#ifdef POWERTRAIN_COOLING_PWM_TIM
-    if (HAL_TIM_PWM_Start(&POWERTRAIN_COOLING_PWM_TIM, POWERTRAIN_COOLING_PWM_CH) != HAL_OK)
-#else
+#if PCBVER == 2
+    if (HAL_TIM_OC_Start(&INVERTER_PUMP_TIM, INVERTER_PUMP_CH) != HAL_OK)
+    {
+        Error_Handler();
+    }
+
     if (HAL_TIM_PWM_Start(&RADIATOR_FANS_PWM_TIM, RADIATOR_FANS_PWM_CH) != HAL_OK)
+#else
+    if (HAL_TIM_PWM_Start(&POWERTRAIN_COOLING_PWM_TIM, POWERTRAIN_COOLING_PWM_CH) != HAL_OK)
 #endif
     {
         /* PWM generation Error */
@@ -443,11 +457,11 @@ void can_send_state(uint32_t delay_100us)
         TxHeader.TransmitGlobalTime = DISABLE;
         TxData[0] = rtd_fsm;
         TxData[1] = mission_is_confirmed() ? mission_get() : MISSION_NO;
-        TxData[2] = (HAL_GPIO_ReadPin(AMS_CMD_GPIO_Port, AMS_CMD_Pin)) |
+        TxData[2] = (HAL_GPIO_ReadPin(AMS_ERR_CMD_GPIO_Port, AMS_ERR_CMD_Pin)) |
                     (HAL_GPIO_ReadPin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin) << 1) |
-                    (HAL_GPIO_ReadPin(IMD_CMD_GPIO_Port, IMD_CMD_Pin) << 2) |
+                    (HAL_GPIO_ReadPin(IMD_ERR_CMD_GPIO_Port, IMD_ERR_CMD_Pin) << 2) |
                     (HAL_GPIO_ReadPin(RTD_CMD_GPIO_Port, RTD_CMD_Pin) << 3) |
-                    (HAL_GPIO_ReadPin(ASB_CMD_GPIO_Port, ASB_CMD_Pin) << 4);
+                    (HAL_GPIO_ReadPin(ASB_ERR_CMD_GPIO_Port, ASB_ERR_CMD_Pin) << 4);
         TxData[3] = button_get(BUTTON_COCK) | button_get(BUTTON_EXT) << 1 | button_get(BUTTON_MISSION) << 2 | STATE_CHANGE_TRIG << 3;
 
         CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);

@@ -53,7 +53,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, AMI3_CMD_Pin|EBS_RELAY2_CMD_Pin|EBS_RELAY1_CMD_Pin|BUZZERAS_CMD_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, AMS_CMD_Pin|BUZZEREV_CMD_Pin|IMD_CMD_Pin|ASB_CMD_Pin
+  HAL_GPIO_WritePin(GPIOB, AMS_ERR_CMD_Pin|BUZZEREV_CMD_Pin|IMD_ERR_CMD_Pin|ASB_ERR_CMD_Pin
                           |INVERTER_PUMP_PWM_CMD_Pin|TSOFF_CMD_Pin|RTD_CMD_Pin|LED1_Pin
                           |AMI_OFF_CMD_Pin|AMI2_CMD_Pin|AMI1_CMD_Pin|ASSI_YELLOW_CMD_Pin
                           |ASSI_BLUE_CMD_Pin, GPIO_PIN_RESET);
@@ -77,7 +77,7 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pins : PBPin PBPin PBPin PBPin
                            PBPin PBPin PBPin PBPin
                            PBPin PBPin PBPin */
-  GPIO_InitStruct.Pin = AMS_CMD_Pin|BUZZEREV_CMD_Pin|IMD_CMD_Pin|ASB_CMD_Pin
+  GPIO_InitStruct.Pin = AMS_ERR_CMD_Pin|BUZZEREV_CMD_Pin|IMD_ERR_CMD_Pin|ASB_ERR_CMD_Pin
                           |INVERTER_PUMP_PWM_CMD_Pin|TSOFF_CMD_Pin|RTD_CMD_Pin|LED1_Pin
                           |AMI_OFF_CMD_Pin|AMI2_CMD_Pin|ASSI_YELLOW_CMD_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;

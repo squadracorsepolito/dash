@@ -18,6 +18,10 @@ typedef enum
     ERROR_INIT_BTN
 } error_t;
 
+#if PCBVER == 2
+extern volatile uint8_t PWM_INVERTER_PUMP;
+#endif
+
 /*CUSTOM FUNCTIONS PROTOTYPES*/
 
 void InitDashBoard();
