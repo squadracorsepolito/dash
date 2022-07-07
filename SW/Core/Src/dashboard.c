@@ -231,11 +231,14 @@ void ReadyToDriveFSM(uint32_t delay_100us)
 
     if (delay_fun(&delay_100us_last, delay_100us))
     {
-        // static int counter_buzzer = 0;
+        static int counter_buzzer = 0;
 
         switch (rtd_fsm)
         {
         case STATE_IDLE:
+            HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, OFF);
+            counter_buzzer = 0;
+
             if (EXT_BUTTON)
             {
                 STATE_CHANGE_TRIG = TRIG_EXT;
@@ -246,7 +249,6 @@ void ReadyToDriveFSM(uint32_t delay_100us)
                 STATE_CHANGE_TRIG = TRIG_COCK;
                 rtd_fsm = STATE_CTOR_EN_WAIT_ACK;
             }
-            HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, OFF);
             break;
 
         case STATE_CTOR_EN_WAIT_ACK:
@@ -289,7 +291,7 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             break;
 
         case STATE_RTD:
-            // TODO: buzzer
+            HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, ON);
             if (IDLE_ACK)
             {
                 rtd_fsm = STATE_IDLE;
@@ -299,22 +301,16 @@ void ReadyToDriveFSM(uint32_t delay_100us)
                 STATE_CHANGE_TRIG = TRIG_COCK;
                 rtd_fsm = STATE_IDLE_WAIT_ACK;
             }
-            HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, ON);
-            // if (counter_buzzer < 40)
-            //{
-            //     counter_buzzer++;
-            //     HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, ON);
-            //     HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, ON);
-            //     HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, ON);
-            // }
-            // else
-            //{
-            //     HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, OFF);
-            //     HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, OFF);
-            //      HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, ON);
-            //     counter_buzzer = 0;
-            //     rtd_fsm = STATE_IDLE;
-            // }
+
+            if (counter_buzzer < 40)
+            {
+                counter_buzzer++;
+                HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, ON);
+            }
+            else
+            {
+                HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, OFF);
+            }
             break;
 
         case STATE_IDLE_WAIT_ACK:
