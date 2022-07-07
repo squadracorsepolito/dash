@@ -209,6 +209,7 @@ void InitDashBoard()
         rtd_fsm = STATE_ERROR;
     }
 
+    mission_set(MISSION_CAN_DSPACE_DO_THIS);
     as_state = AS_OFF;
 }
 

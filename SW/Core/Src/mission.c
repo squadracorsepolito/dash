@@ -5,7 +5,7 @@
 #define PERIOD_2HZ_100us 2500 // Duty cycle time to get 2Hz (toggle at 4Hz)
 
 // Maps logic values for missions to hardware indexes for the multiplexer
-static const uint8_t ami_mapping[NUM_MISSIONS] = {
+static const uint8_t ami_mapping[NUM_MISSIONS + 1] = {
     [MISSION_ACCEL] = 1,
     [MISSION_SKIDPAD] = 0,
     [MISSION_AUTOX] = 5,
@@ -13,7 +13,9 @@ static const uint8_t ami_mapping[NUM_MISSIONS] = {
     [MISSION_EBSTEST] = 6,
     [MISSION_INSPECT] = 3,
     [MISSION_MANUAL] = 2,
-    [MISSION_NO] = 7};
+    [MISSION_NO] = 7,
+    [MISSION_CAN_DSPACE_DO_THIS] = 8,
+};
 
 static bool confirmed = false;
 static mission_t current_mission = MISSION_NO;
@@ -65,9 +67,29 @@ void mission_run()
     }
     else
     {
-        if (delay_fun(&delay_100us_last, PERIOD_2HZ_100us))
+        if (current_mission == MISSION_CAN_DSPACE_DO_THIS)
         {
-            out_mission = (out_mission == current_mission ? MISSION_NO : current_mission);
+            if (delay_fun(&delay_100us_last, 1000))
+            {
+                static int8_t direction = 1;
+                if (out_mission >= NUM_MISSIONS - 1)
+                {
+                    direction = -1;
+                }
+                else if (out_mission <= 1)
+                {
+                    direction = 1;
+                }
+
+                out_mission = out_mission + direction;
+            }
+        }
+        else
+        {
+            if (delay_fun(&delay_100us_last, PERIOD_2HZ_100us))
+            {
+                out_mission = (out_mission == current_mission ? MISSION_NO : current_mission);
+            }
         }
     }
 

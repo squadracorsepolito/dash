@@ -11,6 +11,8 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#define NUM_MISSIONS 8
+
 typedef enum
 {
     MISSION_ACCEL = 1,
@@ -21,8 +23,8 @@ typedef enum
     MISSION_INSPECT = 6,
     MISSION_MANUAL = 7,
     MISSION_NO = 0,
+    MISSION_CAN_DSPACE_DO_THIS = 8,
 
-    NUM_MISSIONS = 8
 } mission_t;
 
 /**
