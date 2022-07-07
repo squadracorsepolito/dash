@@ -57,21 +57,22 @@ void mission_set(mission_t mission)
 void mission_run()
 {
     static uint32_t delay_100us_last = 0;
+    static mission_t out_mission;
 
-    if (!confirmed && delay_fun(&delay_100us_last, PERIOD_2HZ_100us))
+    if (confirmed)
     {
-        // Blink AMI LEDs
-        HAL_GPIO_TogglePin(AMI_OFF_CMD_GPIO_Port, AMI_OFF_CMD_Pin);
+        out_mission = current_mission;
     }
-    else if (confirmed)
+    else
     {
-        // Turn on AMI board
-        HAL_GPIO_WritePin(AMI_OFF_CMD_GPIO_Port, AMI_OFF_CMD_Pin, GPIO_PIN_RESET);
+        if (delay_fun(&delay_100us_last, PERIOD_2HZ_100us))
+        {
+            out_mission = (out_mission == current_mission ? MISSION_NO : current_mission);
+        }
     }
 
-    uint8_t led_index = ami_mapping[current_mission];
     // AMI1,2 and 3 are select pins for a MUX that controls the LEDs
-    HAL_GPIO_WritePin(AMI1_CMD_GPIO_Port, AMI1_CMD_Pin, (0b001 & led_index));
-    HAL_GPIO_WritePin(AMI3_CMD_GPIO_Port, AMI3_CMD_Pin, (0b010 & led_index) >> 1);
-    HAL_GPIO_WritePin(AMI2_CMD_GPIO_Port, AMI2_CMD_Pin, (0b100 & led_index) >> 2);
+    HAL_GPIO_WritePin(AMI1_CMD_GPIO_Port, AMI1_CMD_Pin, (0b001 & ami_mapping[out_mission]));
+    HAL_GPIO_WritePin(AMI3_CMD_GPIO_Port, AMI3_CMD_Pin, (0b010 & ami_mapping[out_mission]) >> 1);
+    HAL_GPIO_WritePin(AMI2_CMD_GPIO_Port, AMI2_CMD_Pin, (0b100 & ami_mapping[out_mission]) >> 2);
 }

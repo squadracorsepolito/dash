@@ -210,7 +210,6 @@ void InitDashBoard()
     }
 
     as_state = AS_OFF;
-    mission_set(MISSION_ACCEL);
 }
 
 void cock_callback()
