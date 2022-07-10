@@ -36,7 +36,7 @@ void as_run()
         case AS_EMERGENCY:
             HAL_GPIO_TogglePin(ASSI_BLUE_CMD_GPIO_Port, ASSI_BLUE_CMD_Pin);
             HAL_GPIO_WritePin(ASSI_YELLOW_CMD_GPIO_Port, ASSI_YELLOW_CMD_Pin, GPIO_PIN_SET);
-            // HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, GPIO_PIN_SET);
             break;
         case AS_TEST:
             // Both lights on

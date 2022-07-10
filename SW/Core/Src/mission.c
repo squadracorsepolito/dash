@@ -14,7 +14,7 @@ static const uint8_t ami_mapping[NUM_MISSIONS + 1] = {
     [MISSION_INSPECT] = 3,
     [MISSION_MANUAL] = 2,
     [MISSION_NO] = 7,
-    [MISSION_CAN_DSPACE_DO_THIS] = 8,
+    //[MISSION_CAN_DSPACE_DO_THIS] = 8,
 };
 
 static bool confirmed = false;
@@ -67,7 +67,7 @@ void mission_run()
     }
     else
     {
-        if (current_mission == MISSION_CAN_DSPACE_DO_THIS)
+        if (current_mission == MISSION_NO)
         {
             if (delay_fun(&delay_100us_last, 1000))
             {

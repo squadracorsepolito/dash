@@ -209,7 +209,7 @@ void InitDashBoard()
         rtd_fsm = STATE_ERROR;
     }
 
-    mission_set(MISSION_CAN_DSPACE_DO_THIS);
+    mission_set(MISSION_NO);
     as_state = AS_OFF;
 }
 
@@ -302,10 +302,11 @@ void ReadyToDriveFSM(uint32_t delay_100us)
                 rtd_fsm = STATE_IDLE_WAIT_ACK;
             }
 
-            if (counter_buzzer < 40)
+            if (counter_buzzer < 200)
             {
                 counter_buzzer++;
-                HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, ON);
+                // HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, ON);
+                HAL_GPIO_TogglePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin);
             }
             else
             {
@@ -462,7 +463,7 @@ void CoreDashBoard(void)
     button_sample();
 
     // RUN the ready to drive FSM
-    ReadyToDriveFSM(500);
+    ReadyToDriveFSM(100);
 
     // Run the AS FSM
     mission_run();
