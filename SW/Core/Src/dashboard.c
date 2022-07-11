@@ -308,10 +308,6 @@ void ReadyToDriveFSM(uint32_t delay_100us)
                 // HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, ON);
                 HAL_GPIO_TogglePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin);
             }
-            else
-            {
-                HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, OFF);
-            }
             break;
 
         case STATE_IDLE_WAIT_ACK:
