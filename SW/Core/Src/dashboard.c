@@ -189,7 +189,10 @@ void InitDashBoard()
     mission_set(MISSION_NO);
     mission_run();
 
-    as_state = AS_TEST;
+    as_state = AS_READY;
+    as_run();
+    HAL_Delay(1000);
+    as_state = AS_FINISHED;
     as_run();
 
     HAL_Delay(900);
