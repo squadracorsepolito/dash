@@ -15,7 +15,7 @@
 
 typedef enum
 {
-    MISSION_ACCEL = 1,
+    MISSION_CIMITERO_PARCO = 1,
     MISSION_SKIDPAD = 2,
     MISSION_AUTOX = 3,
     MISSION_TRACKDRIVE = 4,

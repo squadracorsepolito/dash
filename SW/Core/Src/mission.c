@@ -6,7 +6,7 @@
 
 // Maps logic values for missions to hardware indexes for the multiplexer
 static const uint8_t ami_mapping[NUM_MISSIONS + 1] = {
-    [MISSION_ACCEL] = 1,
+    [MISSION_CIMITERO_PARCO] = 1,
     [MISSION_SKIDPAD] = 0,
     [MISSION_AUTOX] = 5,
     [MISSION_TRACKDRIVE] = 4,
