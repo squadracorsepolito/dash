@@ -6,6 +6,9 @@
  */
 #pragma once
 
+/**
+ * @brief autonomous system states. Numbers match states coming from dSpace
+ */
 typedef enum
 {
     AS_OFF = 1,
@@ -21,5 +24,6 @@ extern as_state_t as_state;
 
 /**
  * @brief Runs the AS finite state machine
+ * @note Call it every 125ms (8Hz)
  */
 void as_run();

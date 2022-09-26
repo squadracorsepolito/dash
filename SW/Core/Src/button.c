@@ -56,9 +56,8 @@ void button_sample()
                 {
                     // If button has been down for a while
                     if (longpress_callback[i])
-                    {
                         longpress_callback[i]();
-                    }
+
                     state[i] = BUTTON_LONGPRESS;
                 }
                 break;

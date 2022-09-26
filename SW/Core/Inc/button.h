@@ -1,7 +1,9 @@
 /**
  * @file button.h
  * @author Matteo Bonora (matteo.bonora@studenti.polito.it)
- * @brief Sample and debounce the input buttons
+ * @brief Sample and debounce the input buttons and handle callbacks
+ * @details Each button is handled through a FSM that supports short/long press
+ * events. When an event occurs, a callback function is triggered.
  * @date 2022-04-30
  */
 
@@ -14,6 +16,7 @@
 #define BUTTON_SHORT_PRESS_TIME_100us 1000
 #define BUTTON_LONG_PRESS_TIME_100us 8000
 
+// List of all supported buttons
 typedef enum
 {
     BUTTON_COCK = 0,
@@ -22,7 +25,7 @@ typedef enum
     BUTTON_COUNT
 } button;
 
-// Phisical condition of the button
+// Physical condition of the button
 typedef enum
 {
     BUTTON_DOWN = 0,

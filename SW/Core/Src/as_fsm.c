@@ -2,7 +2,7 @@
 #include "main.h"
 #include "utils.h"
 
-#define PERIOD_4HZ_100us 1250 // Duty cycle time to get 4Hz (toggle at 8Hz)
+#define PERIOD_4HZ_100us 1250 // Duty cycle time to get 4Hz total period (toggle at 8Hz)
 as_state_t as_state = AS_OFF;
 
 void as_run()
@@ -23,7 +23,7 @@ void as_run()
             break;
         case AS_DRIVING:
             HAL_GPIO_WritePin(ASSI_BLUE_CMD_GPIO_Port, ASSI_BLUE_CMD_Pin, GPIO_PIN_SET);
-            HAL_GPIO_TogglePin(ASSI_YELLOW_CMD_GPIO_Port, ASSI_YELLOW_CMD_Pin); // This will blink at the frequency of the FSM
+            HAL_GPIO_TogglePin(ASSI_YELLOW_CMD_GPIO_Port, ASSI_YELLOW_CMD_Pin); // Note: This will blink at the frequency of the FSM
             break;
         case AS_FINISHED:
             HAL_GPIO_WritePin(ASSI_BLUE_CMD_GPIO_Port, ASSI_BLUE_CMD_Pin, GPIO_PIN_RESET);

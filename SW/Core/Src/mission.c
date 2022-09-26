@@ -20,7 +20,17 @@ static const uint8_t ami_mapping[NUM_MISSIONS + 1] = {
 static bool confirmed = false;
 static mission_t current_mission = MISSION_NO;
 
-void ami_confirm()
+// Local functions
+void mission_confirm();
+void mission_select_next();
+
+void mission_setup()
+{
+    button_set_longpress_callback(BUTTON_MISSION, mission_confirm);
+    button_set_shortpress_callback(BUTTON_MISSION, mission_select_next);
+}
+
+void mission_confirm()
 {
     if (mission_get() != MISSION_NO)
         confirmed = true;
@@ -31,18 +41,13 @@ bool mission_is_confirmed()
     return confirmed;
 }
 
-void ami_mission_increment()
+void mission_select_next()
 {
     if (!confirmed)
     {
+        // Cycles through the missions, rolling back to 0 at the end
         mission_set((mission_get() % (NUM_MISSIONS - 1)) + 1);
     }
-}
-
-void mission_setup()
-{
-    button_set_longpress_callback(BUTTON_MISSION, ami_confirm);
-    button_set_shortpress_callback(BUTTON_MISSION, ami_mission_increment);
 }
 
 mission_t mission_get()
@@ -69,6 +74,7 @@ void mission_run()
     {
         if (current_mission == MISSION_NO)
         {
+            // KITT
             if (delay_fun(&delay_100us_last, 1000))
             {
                 static int8_t direction = 1;
@@ -81,7 +87,7 @@ void mission_run()
                     direction = 1;
                 }
 
-                out_mission = out_mission + direction;
+                out_mission += direction;
             }
         }
         else

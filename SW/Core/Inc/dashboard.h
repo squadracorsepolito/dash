@@ -8,14 +8,15 @@
 
 /*CUSTOM DEFINE*/
 
+// In case someone forgets
 #define ON 1
 #define OFF 0
 
 typedef enum
 {
     ERROR_NONE = 0,
-    ERROR_CAN_WDG,
-    ERROR_INIT_BTN
+    ERROR_CAN_WDG, // Can watchdog
+    ERROR_INIT_BTN  // Button initialization
 } error_t;
 
 /*CUSTOM FUNCTIONS PROTOTYPES*/
