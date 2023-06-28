@@ -48,7 +48,8 @@ void BootInit(void)
   /* initialize the non-volatile memory driver */
   NvmInit();
   /* initialize the leds */
-  LedBlinkInit(TimerGet());
+  LedBlinkInit(50);
+  TimerInit();
 #if (BOOT_COM_ENABLE > 0)
   /* initialize the communication module */
   ComInit();

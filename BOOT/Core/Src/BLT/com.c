@@ -54,7 +54,7 @@ void ComInit(void)
   XcpInit();
 #if (BOOT_COM_CAN_ENABLE > 0)
   /* initialize the CAN controller */
-  //CanInit();
+  CanInit();
   /* set it as active */
   comActiveInterface = COM_IF_CAN;
 #endif

@@ -164,16 +164,16 @@ void CanInit(void)
    */
   ASSERT_CT(BOOT_COM_CAN_CHANNEL_INDEX == 0);
   /* obtain bittiming configuration information. */
-  if (CanGetSpeedConfig(BOOT_COM_CAN_BAUDRATE/1000, &prescaler, &tseg1, &tseg2) == BLT_FALSE)
-  {
-    /* Incorrect configuration. The specified baudrate is not supported for the given
-     * clock configuration. Verify the following settings in blt_conf.h:
-     *   - BOOT_COM_CAN_BAUDRATE
-     *   - BOOT_CPU_XTAL_SPEED_KHZ
-     *   - BOOT_CPU_SYSTEM_SPEED_KHZ
-     */
-    ASSERT_RT(BLT_FALSE);
-  }
+  // if (CanGetSpeedConfig(BOOT_COM_CAN_BAUDRATE/1000, &prescaler, &tseg1, &tseg2) == BLT_FALSE)
+  // {
+  //   /* Incorrect configuration. The specified baudrate is not supported for the given
+  //    * clock configuration. Verify the following settings in blt_conf.h:
+  //    *   - BOOT_COM_CAN_BAUDRATE
+  //    *   - BOOT_CPU_XTAL_SPEED_KHZ
+  //    *   - BOOT_CPU_SYSTEM_SPEED_KHZ
+  //    */
+  //   ASSERT_RT(BLT_FALSE);
+  // }
 
   /* set the CAN controller configuration. */
   canHandle.Instance = CAN_CHANNEL;
@@ -185,9 +185,9 @@ void CanInit(void)
   canHandle.Init.TransmitFifoPriority = DISABLE;
   canHandle.Init.Mode = CAN_MODE_NORMAL;
   canHandle.Init.SyncJumpWidth = CAN_SJW_1TQ;
-  canHandle.Init.TimeSeg1 = ((blt_int32u)tseg1 - 1) << CAN_BTR_TS1_Pos;
-  canHandle.Init.TimeSeg2 = ((blt_int32u)tseg2 - 1) << CAN_BTR_TS2_Pos;
-  canHandle.Init.Prescaler = prescaler;
+  canHandle.Init.TimeSeg1 = ((blt_int32u)15 - 1) << CAN_BTR_TS1_Pos;
+  canHandle.Init.TimeSeg2 = ((blt_int32u)2 - 1) << CAN_BTR_TS2_Pos;
+  canHandle.Init.Prescaler = 2;
   /* initialize the CAN controller. this only fails if the CAN controller hardware is
    * faulty. no need to evaluate the return value as there is nothing we can do about
    * a faulty CAN controller.

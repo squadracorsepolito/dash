@@ -51,19 +51,7 @@
 ****************************************************************************************/
 blt_bool CpuUserProgramStartHook(void)
 {
-  /* additional and optional backdoor entry through the pushbutton on the board. to
-   * force the bootloader to stay active after reset, keep the pushbutton pressed 
-   * during reset.
-   */
-  if (LL_GPIO_IsInputPinSet(GPIOA, LL_GPIO_PIN_0) != 0)
-  {
-    /* pushbutton pressed, so do not start the user program and keep the
-     * bootloader active instead.
-     */
-    return BLT_FALSE;
-  }
-  /* clean up the LED driver */
-  LedBlinkExit();
+  HAL_RCC_DeInit();
   /*  okay to start the user program.*/
   return BLT_TRUE;
 } /*** end of CpuUserProgramStartHook ***/
