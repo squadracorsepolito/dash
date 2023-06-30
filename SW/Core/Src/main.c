@@ -100,8 +100,6 @@ int main(void)
   MX_TIM16_Init();
   MX_TIM17_Init();
   MX_CAN_Init();
-  MX_TIM1_Init();
-  MX_TIM15_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
     // Start the counter
@@ -162,12 +160,9 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_TIM1
-                              |RCC_PERIPHCLK_TIM15|RCC_PERIPHCLK_TIM16
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_TIM16
                               |RCC_PERIPHCLK_TIM17;
   PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
-  PeriphClkInit.Tim1ClockSelection = RCC_TIM1CLK_HCLK;
-  PeriphClkInit.Tim15ClockSelection = RCC_TIM15CLK_HCLK;
   PeriphClkInit.Tim16ClockSelection = RCC_TIM16CLK_HCLK;
   PeriphClkInit.Tim17ClockSelection = RCC_TIM17CLK_HCLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -194,7 +189,7 @@ void Error_Handler(void)
     HAL_UART_Transmit(&huart1, (uint8_t *)msg, 30, 20);
 
     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, OFF);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, ON);
+    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, OFF);
 
     while (1)
     {

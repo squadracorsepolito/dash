@@ -50,36 +50,22 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, AMI3_CMD_Pin|EBS_RELAY2_CMD_Pin|EBS_RELAY1_CMD_Pin|BUZZERAS_CMD_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, AMS_ERR_CMD_Pin|BUZZEREV_CMD_Pin|IMD_ERR_CMD_Pin|ASB_ERR_CMD_Pin
-                          |INVERTER_PUMP_PWM_CMD_Pin|TSOFF_CMD_Pin|RTD_CMD_Pin|LED1_Pin
-                          |AMI_OFF_CMD_Pin|AMI2_CMD_Pin|AMI1_CMD_Pin|ASSI_YELLOW_CMD_Pin
-                          |ASSI_BLUE_CMD_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, AMS_ERR_CMD_Pin|BUZZEREV_CMD_Pin|IMD_ERR_CMD_Pin|SD_CLOSED_CMD_Pin
+                          |TSOFF_CMD_Pin|RTD_CMD_Pin|LED1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : PAPin PAPin PAPin PAPin */
-  GPIO_InitStruct.Pin = AMI3_CMD_Pin|EBS_RELAY2_CMD_Pin|EBS_RELAY1_CMD_Pin|BUZZERAS_CMD_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PAPin PAPin */
-  GPIO_InitStruct.Pin = COCK_BTN_Pin|MISSION_BTN_Pin;
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = RTD_BTN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(RTD_BTN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PBPin PBPin PBPin PBPin
-                           PBPin PBPin PBPin PBPin
                            PBPin PBPin PBPin */
-  GPIO_InitStruct.Pin = AMS_ERR_CMD_Pin|BUZZEREV_CMD_Pin|IMD_ERR_CMD_Pin|ASB_ERR_CMD_Pin
-                          |INVERTER_PUMP_PWM_CMD_Pin|TSOFF_CMD_Pin|RTD_CMD_Pin|LED1_Pin
-                          |AMI_OFF_CMD_Pin|AMI2_CMD_Pin|ASSI_YELLOW_CMD_Pin;
+  GPIO_InitStruct.Pin = AMS_ERR_CMD_Pin|BUZZEREV_CMD_Pin|IMD_ERR_CMD_Pin|SD_CLOSED_CMD_Pin
+                          |TSOFF_CMD_Pin|RTD_CMD_Pin|LED1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -97,13 +83,6 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED2_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PBPin PBPin */
-  GPIO_InitStruct.Pin = AMI1_CMD_Pin|ASSI_BLUE_CMD_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 

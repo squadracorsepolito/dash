@@ -58,20 +58,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define AMI3_CMD_Pin GPIO_PIN_0
-#define AMI3_CMD_GPIO_Port GPIOA
-#define ASB_SERVO_PWM_CMD_Pin GPIO_PIN_1
-#define ASB_SERVO_PWM_CMD_GPIO_Port GPIOA
-#define EBS_RELAY2_CMD_Pin GPIO_PIN_2
-#define EBS_RELAY2_CMD_GPIO_Port GPIOA
-#define EBS_RELAY1_CMD_Pin GPIO_PIN_3
-#define EBS_RELAY1_CMD_GPIO_Port GPIOA
-#define COCK_BTN_Pin GPIO_PIN_5
-#define COCK_BTN_GPIO_Port GPIOA
-#define MISSION_BTN_Pin GPIO_PIN_6
-#define MISSION_BTN_GPIO_Port GPIOA
-#define BUZZERAS_CMD_Pin GPIO_PIN_7
-#define BUZZERAS_CMD_GPIO_Port GPIOA
+#define RTD_BTN_Pin GPIO_PIN_6
+#define RTD_BTN_GPIO_Port GPIOA
 #define AMS_ERR_CMD_Pin GPIO_PIN_0
 #define AMS_ERR_CMD_GPIO_Port GPIOB
 #define BUZZEREV_CMD_Pin GPIO_PIN_1
@@ -80,10 +68,8 @@ void Error_Handler(void);
 #define IMD_ERR_CMD_GPIO_Port GPIOB
 #define EXT_BTN_Pin GPIO_PIN_10
 #define EXT_BTN_GPIO_Port GPIOB
-#define ASB_ERR_CMD_Pin GPIO_PIN_11
-#define ASB_ERR_CMD_GPIO_Port GPIOB
-#define INVERTER_PUMP_PWM_CMD_Pin GPIO_PIN_12
-#define INVERTER_PUMP_PWM_CMD_GPIO_Port GPIOB
+#define SD_CLOSED_CMD_Pin GPIO_PIN_11
+#define SD_CLOSED_CMD_GPIO_Port GPIOB
 #define TSOFF_CMD_Pin GPIO_PIN_13
 #define TSOFF_CMD_GPIO_Port GPIOB
 #define RTD_CMD_Pin GPIO_PIN_14
@@ -92,20 +78,11 @@ void Error_Handler(void);
 #define LED1_GPIO_Port GPIOB
 #define LED2_Pin GPIO_PIN_8
 #define LED2_GPIO_Port GPIOA
-#define AMI_OFF_CMD_Pin GPIO_PIN_3
-#define AMI_OFF_CMD_GPIO_Port GPIOB
-#define AMI2_CMD_Pin GPIO_PIN_4
-#define AMI2_CMD_GPIO_Port GPIOB
-#define AMI1_CMD_Pin GPIO_PIN_5
-#define AMI1_CMD_GPIO_Port GPIOB
-#define ASSI_YELLOW_CMD_Pin GPIO_PIN_6
-#define ASSI_YELLOW_CMD_GPIO_Port GPIOB
-#define ASSI_BLUE_CMD_Pin GPIO_PIN_7
-#define ASSI_BLUE_CMD_GPIO_Port GPIOB
 #define BAT_FAN_PWM_CMD_Pin GPIO_PIN_8
 #define BAT_FAN_PWM_CMD_GPIO_Port GPIOB
 #define RADIATOR_FANS_PWM_CMD_Pin GPIO_PIN_9
 #define RADIATOR_FANS_PWM_CMD_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 
 #define PCBVER 2
@@ -132,12 +109,6 @@ void Error_Handler(void);
 
 #define RADIATOR_FANS_PWM_TIM htim17
 #define RADIATOR_FANS_PWM_CH TIM_CHANNEL_1
-
-#define ASB_MOTOR_PWM_TIM htim15
-#define ASB_MOTOR_PWM_CH TIM_CHANNEL_1
-
-#define INVERTER_PUMP_TIM htim1
-#define INVERTER_PUMP_CH TIM_CHANNEL_1
 
 #define COUNTER_TIM htim2
 

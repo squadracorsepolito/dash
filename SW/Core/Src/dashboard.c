@@ -1,10 +1,9 @@
 /*INCLUDE*/
 
 #include "dashboard.h"
-#include "as_fsm.h"
 #include "button.h"
 #include "can.h"
-#include "mission.h"
+#include "sc22_evo_canlv.h"
 #include "tim.h"
 #include "usart.h"
 #include "utils.h"
@@ -46,7 +45,7 @@ error_t error = ERROR_NONE;
 uint8_t boards_timeouts;
 
 /* Cock LEDs flags */
-volatile bool ASB_ERR;
+volatile bool SD_CLOSED;
 volatile bool BMS_ERR;
 volatile bool TSOFF;
 volatile bool IMD_ERR;
@@ -61,21 +60,28 @@ volatile bool NACK;
 volatile uint8_t PWM_BAT_FAN;
 volatile uint8_t PWM_ASB_MOTOR;
 #if PCBVER == 2
-volatile uint8_t PWM_INVERTER_PUMP;
 volatile uint8_t PWM_RADIATOR_FAN;
 #elif PCBVER == 1
 volatile uint8_t PWM_POWERTRAIN;
 #endif
+volatile float BRAKE_EXT;
 
 /* Button short press flags */
-bool COCK_BUTTON = false;
-bool EXT_BUTTON = false;
+bool RTD_BUTTON = false;
 
 /*CUSTOM FUNCTIONS*/
 
 /*Rx Message interrupt from CAN*/
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
+    union {
+        struct sc22_evo_canlv_d_space_rtd_ack_t rtd_ack;
+        struct sc22_evo_canlv_d_space_peripherals_ctrl_t per_ctrl;
+        struct sc22_evo_canlv_sens_front_1_t sens_front_1;
+        struct sc22_evo_canlv_tlb_battery_tsal_status_t tsal_status;
+        struct sc22_evo_canlv_tlb_battery_shut_status_t shut_status;
+    } msgs;
+
     if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
     {
         /* Transmission request Error */
@@ -87,103 +93,64 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     uint32_t now = ReturnTime_100us();
     switch (RxHeader.StdId)
     {
-    case EBS_CMD_ID_CAN:
-    case ASB_CMD_ID_CAN:
-    case AS_STATE_ID_CAN:
-    case FSM_ACK_ID_CAN:
-    case PWM_CMD_ID_CAN:
+    case SC22_EVO_CANLV_D_SPACE_RTD_ACK_FRAME_ID:
+    case SC22_EVO_CANLV_D_SPACE_PERIPHERALS_CTRL_FRAME_ID:
         // Reset dSpace timeout after boot
-        wdg_timeouts_100us[WDG_BOARD_DSPACE] = 5000;
+        wdg_timeouts_100us[WDG_BOARD_DSPACE] = 4800;
         wdg_reset(WDG_BOARD_DSPACE, now);
         break;
-    case TLB_ERROR_ID_CAN:
+    case SC22_EVO_CANLV_TLB_BATTERY_TSAL_STATUS_FRAME_ID:
+    case SC22_EVO_CANLV_TLB_BATTERY_SHUT_STATUS_FRAME_ID:
         wdg_reset(WDG_BOARD_TLB, now);
+        break;
+    case SC22_EVO_CANLV_SENS_FRONT_1_FRAME_ID:
+        wdg_reset(WDG_BOARD_SENS_FRONT, now);
         break;
     }
 
     /*Reboot Board - Received command byte from CAN*/
-    if ((RxHeader.StdId == BOOTLOADER_ID_CAN) && (RxHeader.DLC == 2) && (RxData[0] == 0xFF) && (RxData[1] == 0x00))
+    if ((RxHeader.StdId == 0x9) && (RxHeader.DLC == 2) && (RxData[0] == 0xFF) && (RxData[1] == 0x00))
     {
         NVIC_SystemReset();
     }
 
     /*
      *
+     * sensFront
+     *
+     */
+    else if((RxHeader.StdId == SC22_EVO_CANLV_SENS_FRONT_1_FRAME_ID) && (RxHeader.DLC == SC22_EVO_CANLV_SENS_FRONT_1_LENGTH)) {
+        sc22_evo_canlv_sens_front_1_unpack(&msgs.sens_front_1, RxData, SC22_EVO_CANLV_SENS_FRONT_1_LENGTH);
+
+        BRAKE_EXT = sc22_evo_canlv_sens_front_1_brake_straingauge_voltage_m_v_decode(msgs.sens_front_1.brake_straingauge_voltage_m_v);
+    }
+    /*
+     *
      * dSpace
      *
      */
-    /*EBS commmand*/
-    else if ((RxHeader.StdId == EBS_CMD_ID_CAN) && (RxHeader.DLC == 1))
+    else if ((RxHeader.StdId == SC22_EVO_CANLV_D_SPACE_RTD_ACK_FRAME_ID) && (RxHeader.DLC == SC22_EVO_CANLV_D_SPACE_RTD_ACK_LENGTH))
     {
-        HAL_GPIO_WritePin(EBS_RELAY1_CMD_GPIO_Port, EBS_RELAY1_CMD_Pin, RxData[0] & 0b1);
-        HAL_GPIO_WritePin(EBS_RELAY2_CMD_GPIO_Port, EBS_RELAY2_CMD_Pin, (RxData[0] >> 1) & 0b1);
-    }
-    /* ASB command */
-    else if ((RxHeader.StdId == ASB_CMD_ID_CAN) && (RxHeader.DLC == 1))
-    {
-        if (RxData[0] <= 255)
-        {
-            // Min PWM pulse=800 (800us)
-            // Max PWM pulse=2100 (2.1ms)
-            PWM_ASB_MOTOR = RxData[0] * ((2100 - 800) / 255) + 800;
-            __HAL_TIM_SET_COMPARE(&ASB_MOTOR_PWM_TIM, ASB_MOTOR_PWM_CH, PWM_ASB_MOTOR);
-        }
-        else
-        {
-            // TODO: handle ASB error?
-        }
-    }
-    /* AS state */
-    else if ((RxHeader.StdId == AS_STATE_ID_CAN) && (RxHeader.DLC == 2))
-    {
-        ASB_ERR = (bool)(RxData[0] & (1 << 7));
-        if (RxData[1] < AS_TEST)
-        {
-            as_state = RxData[1];
-        }
-    }
-    /* ACK from dSpace */
-    else if ((RxHeader.StdId == FSM_ACK_ID_CAN) && (RxHeader.DLC == 1))
-    {
-        switch (RxData[0])
-        {
-        case 1:
+        sc22_evo_canlv_d_space_rtd_ack_unpack(&msgs.rtd_ack, RxData, SC22_EVO_CANLV_D_SPACE_RTD_ACK_LENGTH);
+
+        if(msgs.rtd_ack.ctor_en_ack) {
             CTOR_EN_ACK = true;
-            break;
-        case 2:
+        } else if(msgs.rtd_ack.rtd_en_ack) {
             RTD_EN_ACK = true;
-            break;
-        case 3:
+        } else if(msgs.rtd_ack.reboot_fsm) {
             IDLE_ACK = true;
-            break;
-        case 4:
             NACK = true;
-            break;
         }
     }
-    /* Cooling Command */
-    else if ((RxHeader.StdId == PWM_CMD_ID_CAN) && (RxHeader.DLC == 3 || RxHeader.DLC == 2))
+    else if ((RxHeader.StdId == SC22_EVO_CANLV_D_SPACE_PERIPHERALS_CTRL_FRAME_ID) && (RxHeader.DLC == SC22_EVO_CANLV_D_SPACE_PERIPHERALS_CTRL_LENGTH))
     {
-        // Radiator fan and pump signals have been merged to make space for ASB signal.
-#if PCBVER == 1
-        PWM_POWERTRAIN = RxData[0];
-        __HAL_TIM_SET_COMPARE(&POWERTRAIN_COOLING_PWM_TIM, POWERTRAIN_COOLING_PWM_CH, PWM_POWERTRAIN);
-#elif PCBVER == 2
-        PWM_RADIATOR_FAN = RxData[0];
+#if PCBVER == 2
+        sc22_evo_canlv_d_space_peripherals_ctrl_unpack(&msgs.per_ctrl, RxData, SC22_EVO_CANLV_D_SPACE_PERIPHERALS_CTRL_LENGTH);
+        
+        PWM_RADIATOR_FAN = (msgs.per_ctrl.rad_fan_pwm_ctrl/255.*__HAL_TIM_GetAutoreload(&RADIATOR_FANS_PWM_TIM));
         __HAL_TIM_SET_COMPARE(&RADIATOR_FANS_PWM_TIM, RADIATOR_FANS_PWM_CH, PWM_RADIATOR_FAN);
-        if (RxHeader.DLC == 2)
-        {
-            // This signal has to be bit-banged because Francesco Minichelli is stupid
-            PWM_INVERTER_PUMP = RxData[0];
-        }
-        else if (RxHeader.DLC == 3)
-        {
-            // This signal has to be bit-banged because Francesco Minichelli is stupid
-            PWM_INVERTER_PUMP = RxData[2];
-        }
 #endif
-        // TODO: map 0-255 to PWM values
-        PWM_BAT_FAN = RxData[1];
+        PWM_BAT_FAN = (msgs.per_ctrl.batt_hv_fan_ctrl/255.*__HAL_TIM_GetAutoreload(&RADIATOR_FANS_PWM_TIM));
         __HAL_TIM_SET_COMPARE(&BAT_FAN_PWM_TIM, BAT_FAN_PWM_CH, PWM_BAT_FAN);
     }
 
@@ -193,61 +160,45 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
      *
      */
     /* Received TLB error byte in order to turn LEDs on or off */
-    else if ((RxHeader.StdId == TLB_ERROR_ID_CAN) && (RxHeader.DLC == 1) && (RxData[0] < 16))
+    else if ((RxHeader.StdId == SC22_EVO_CANLV_TLB_BATTERY_TSAL_STATUS_FRAME_ID) && (RxHeader.DLC == SC22_EVO_CANLV_TLB_BATTERY_TSAL_STATUS_LENGTH))
     {
-        TSOFF = (bool)(RxData[0] & 1);
-        BMS_ERR = (bool)(RxData[0] & 4) || (bool)(RxData[0] & 2);
-        IMD_ERR = (bool)(RxData[0] & 4);
+        sc22_evo_canlv_tlb_battery_tsal_status_unpack(&msgs.tsal_status, RxData, SC22_EVO_CANLV_TLB_BATTERY_TSAL_STATUS_LENGTH);
+        
+        TSOFF = (bool)msgs.tsal_status.tsal_is_green_on;
+    }
+    else if ((RxHeader.StdId == SC22_EVO_CANLV_TLB_BATTERY_SHUT_STATUS_FRAME_ID) && (RxHeader.DLC == SC22_EVO_CANLV_TLB_BATTERY_SHUT_STATUS_LENGTH)) {
+        sc22_evo_canlv_tlb_battery_shut_status_unpack(&msgs.shut_status, RxData, SC22_EVO_CANLV_TLB_BATTERY_SHUT_STATUS_LENGTH);
+        BMS_ERR = (bool)msgs.shut_status.is_ams_error_latched;
+        IMD_ERR = (bool)msgs.shut_status.is_imd_error_latched;
+        SD_CLOSED = (bool)msgs.shut_status.is_shutdown_closed_pre_tlb_batt_final;
     }
 }
 
 void InitDashBoard()
 {
-    HAL_GPIO_WritePin(EBS_RELAY1_CMD_GPIO_Port, EBS_RELAY1_CMD_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(EBS_RELAY2_CMD_GPIO_Port, EBS_RELAY2_CMD_Pin, GPIO_PIN_RESET);
-
     // Turn on all LEDs
     HAL_GPIO_WritePin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(ASB_ERR_CMD_GPIO_Port, ASB_ERR_CMD_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(SD_CLOSED_CMD_GPIO_Port, SD_CLOSED_CMD_Pin, GPIO_PIN_SET);
     HAL_GPIO_WritePin(AMS_ERR_CMD_GPIO_Port, AMS_ERR_CMD_Pin, GPIO_PIN_SET);
     HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, GPIO_PIN_SET);
     HAL_GPIO_WritePin(IMD_ERR_CMD_GPIO_Port, IMD_ERR_CMD_Pin, GPIO_PIN_SET);
-
-    mission_set(MISSION_NO);
-    mission_run();
-
-    as_state = AS_TEST;
-    as_run();
 
     HAL_Delay(900);
     HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_SET);
     HAL_Delay(50);
     HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, GPIO_PIN_SET);
-    HAL_Delay(50);
-    HAL_GPIO_WritePin(BUZZERAS_CMD_GPIO_Port, BUZZERAS_CMD_Pin, GPIO_PIN_RESET);
 
     // Test inputs
-    if (button_get(BUTTON_COCK) ||
-        button_get(BUTTON_EXT) ||
-        button_get(BUTTON_MISSION))
-    {
-        error = ERROR_INIT_BTN;
-        rtd_fsm = STATE_ERROR;
-    }
-
-    as_state = AS_OFF;
-    mission_set(MISSION_ACCEL);
+    // if (button_get(BUTTON_RTD))
+    // {
+    //     error = ERROR_INIT_BTN;
+    //     rtd_fsm = STATE_ERROR;
+    // }
 }
 
 void cock_callback()
 {
-    COCK_BUTTON = true;
-}
-
-void ext_callback()
-{
-    EXT_BUTTON = true;
+    RTD_BUTTON = true;
 }
 
 /*FSM*/
@@ -255,6 +206,7 @@ void ReadyToDriveFSM(uint32_t delay_100us)
 {
     // Set first delay back to give time for the buttons to debounce
     static uint32_t delay_100us_last = 0;
+    static uint32_t timeout = 0;
 
     if (delay_fun(&delay_100us_last, delay_100us))
     {
@@ -263,21 +215,17 @@ void ReadyToDriveFSM(uint32_t delay_100us)
         switch (rtd_fsm)
         {
         case STATE_IDLE:
-            if (EXT_BUTTON)
-            {
-                STATE_CHANGE_TRIG = TRIG_EXT;
-                rtd_fsm = STATE_CTOR_EN_WAIT_ACK;
-            }
-            else if (COCK_BUTTON)
+            if (RTD_BUTTON)
             {
                 STATE_CHANGE_TRIG = TRIG_COCK;
                 rtd_fsm = STATE_CTOR_EN_WAIT_ACK;
+                timeout = HAL_GetTick();
             }
-            HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, OFF);
+            HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, GPIO_PIN_RESET);
             break;
 
         case STATE_CTOR_EN_WAIT_ACK:
-            if (NACK)
+            if (NACK || HAL_GetTick() - timeout > 500)
             {
                 STATE_CHANGE_TRIG = TRIG_NONE;
                 rtd_fsm = STATE_IDLE;
@@ -286,24 +234,25 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             {
                 STATE_CHANGE_TRIG = TRIG_NONE;
                 rtd_fsm = STATE_TS_ON;
+                timeout = HAL_GetTick();
             }
             break;
 
         case STATE_TS_ON:
-            if (RTD_EN_ACK)
-            {
+            if(NACK) {
                 STATE_CHANGE_TRIG = TRIG_NONE;
-                rtd_fsm = STATE_RTD;
+                rtd_fsm = STATE_IDLE;
             }
-            else if (COCK_BUTTON)
+            else if (RTD_BUTTON && BRAKE_EXT > 400)
             {
                 STATE_CHANGE_TRIG = TRIG_COCK;
                 rtd_fsm = STATE_RTD_WAIT_ACK;
+                timeout = HAL_GetTick();
             }
             break;
 
         case STATE_RTD_WAIT_ACK:
-            if (NACK || IDLE_ACK)
+            if (NACK || IDLE_ACK || HAL_GetTick() - timeout > 500)
             {
                 STATE_CHANGE_TRIG = TRIG_NONE;
                 rtd_fsm = STATE_IDLE;
@@ -312,6 +261,7 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             {
                 STATE_CHANGE_TRIG = TRIG_NONE;
                 rtd_fsm = STATE_RTD;
+                HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_SET);
             }
             break;
 
@@ -321,12 +271,15 @@ void ReadyToDriveFSM(uint32_t delay_100us)
             {
                 rtd_fsm = STATE_IDLE;
             }
-            else if (COCK_BUTTON)
+            else if (RTD_BUTTON)
             {
                 STATE_CHANGE_TRIG = TRIG_COCK;
                 rtd_fsm = STATE_IDLE_WAIT_ACK;
             }
             HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, ON);
+
+            if(HAL_GetTick() - timeout > 1000)
+                HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_RESET);
             // if (counter_buzzer < 40)
             //{
             //     counter_buzzer++;
@@ -370,8 +323,7 @@ void ReadyToDriveFSM(uint32_t delay_100us)
         IDLE_ACK = false;
         NACK = false;
 
-        COCK_BUTTON = false;
-        EXT_BUTTON = false;
+        RTD_BUTTON = false;
     }
 }
 
@@ -382,7 +334,7 @@ void UpdateCockpitLed(uint32_t delay_100us)
 
     if (delay_fun(&delay_100us_last, delay_100us))
     {
-        HAL_GPIO_WritePin(ASB_ERR_CMD_GPIO_Port, ASB_ERR_CMD_Pin, ASB_ERR);
+        HAL_GPIO_WritePin(SD_CLOSED_CMD_GPIO_Port, SD_CLOSED_CMD_Pin, SD_CLOSED);
 
         if (boards_timeouts & WDG_BOARD_TLB)
         {
@@ -405,16 +357,7 @@ void SetupDashBoard(void)
 {
 
 /*Start timer for PWM*/
-#if PCBVER == 2
-    if (HAL_TIM_OC_Start(&INVERTER_PUMP_TIM, INVERTER_PUMP_CH) != HAL_OK)
-    {
-        Error_Handler();
-    }
-
     if (HAL_TIM_PWM_Start(&RADIATOR_FANS_PWM_TIM, RADIATOR_FANS_PWM_CH) != HAL_OK)
-#else
-    if (HAL_TIM_PWM_Start(&POWERTRAIN_COOLING_PWM_TIM, POWERTRAIN_COOLING_PWM_CH) != HAL_OK)
-#endif
     {
         /* PWM generation Error */
         Error_Handler();
@@ -426,17 +369,7 @@ void SetupDashBoard(void)
         /* PWM generation Error */
         Error_Handler();
     }
-
-    /*Start timer for PWM*/
-    if (HAL_TIM_PWM_Start(&ASB_MOTOR_PWM_TIM, ASB_MOTOR_PWM_CH) != HAL_OK)
-    {
-        /* PWM generation Error */
-        Error_Handler();
-    }
-
-    mission_setup();
-    button_set_shortpress_callback(BUTTON_COCK, cock_callback);
-    button_set_shortpress_callback(BUTTON_EXT, ext_callback);
+    button_set_shortpress_callback(BUTTON_RTD, cock_callback);
 
     char msg[54] = {0};
     sprintf(msg, "Dashboard 2022 Boot - build %s @ %s\n\r", __DATE__, __TIME__);
@@ -448,41 +381,35 @@ void can_send_state(uint32_t delay_100us)
 {
     static uint32_t delay_100us_last = 0;
 
+    union {
+        struct sc22_evo_canlv_steering_rtd_t rtd;
+        struct sc22_evo_canlv_steering_motor_control_debug_t motor_ctrl_dbg;
+    } msgs;
+
     if (delay_fun(&delay_100us_last, delay_100us))
     {
-        TxHeader.StdId = DASH_STATUS_ID_CAN;
-        TxHeader.RTR = CAN_RTR_DATA;
-        TxHeader.IDE = CAN_ID_STD;
-        TxHeader.DLC = 4;
-        TxHeader.TransmitGlobalTime = DISABLE;
-        TxData[0] = rtd_fsm;
-        TxData[1] = mission_is_confirmed() ? mission_get() : MISSION_NO;
-        TxData[2] = (HAL_GPIO_ReadPin(AMS_ERR_CMD_GPIO_Port, AMS_ERR_CMD_Pin)) |
-                    (HAL_GPIO_ReadPin(TSOFF_CMD_GPIO_Port, TSOFF_CMD_Pin) << 1) |
-                    (HAL_GPIO_ReadPin(IMD_ERR_CMD_GPIO_Port, IMD_ERR_CMD_Pin) << 2) |
-                    (HAL_GPIO_ReadPin(RTD_CMD_GPIO_Port, RTD_CMD_Pin) << 3) |
-                    (HAL_GPIO_ReadPin(ASB_ERR_CMD_GPIO_Port, ASB_ERR_CMD_Pin) << 4);
-        TxData[3] = button_get(BUTTON_COCK) | button_get(BUTTON_EXT) << 1 | button_get(BUTTON_MISSION) << 2 | STATE_CHANGE_TRIG << 3;
-
-        CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
-
-        // Error state
-        TxHeader.StdId = DASH_ERR_ID_CAN;
-        TxHeader.RTR = CAN_RTR_DATA;
-        TxHeader.IDE = CAN_ID_STD;
-        TxHeader.DLC = 2;
-        TxHeader.TransmitGlobalTime = DISABLE;
-        TxData[0] = error;
-        TxData[1] = 0;
-        switch (error)
-        {
-        case ERROR_CAN_WDG:
-            TxData[1] = boards_timeouts;
-            break;
-        default:
-            break;
+        switch(rtd_fsm) {
+            case STATE_IDLE:
+                msgs.rtd.rtd_cmd = 0x0;
+                break;
+            case STATE_CTOR_EN_WAIT_ACK:
+                msgs.rtd.rtd_cmd = 0x1;
+                break;
+            case STATE_RTD_WAIT_ACK:
+                msgs.rtd.rtd_cmd = 0x2;
+                break;
+            default:
+                msgs.rtd.rtd_cmd = rtd_fsm;
+                break;
         }
-        CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 30);
+        sc22_evo_canlv_steering_rtd_pack(TxData, &msgs.rtd, SC22_EVO_CANLV_STEERING_RTD_LENGTH);
+
+        TxHeader.StdId = SC22_EVO_CANLV_STEERING_RTD_FRAME_ID;
+        TxHeader.RTR = CAN_RTR_DATA;
+        TxHeader.IDE = CAN_ID_STD;
+        TxHeader.DLC = SC22_EVO_CANLV_STEERING_RTD_LENGTH;
+
+        CAN_Msg_Send(&hcan, &TxHeader, TxData, &TxMailbox, 300);
     }
 }
 
@@ -505,15 +432,15 @@ void CoreDashBoard(void)
     ReadyToDriveFSM(500);
 
     // Run the AS FSM
-    mission_run();
-    as_run();
+    // mission_run();
+    // as_run();
 
     uint8_t timeouts = wdg_check();
     if (rtd_fsm != STATE_ERROR && timeouts != 0)
     {
         error = ERROR_CAN_WDG;
         boards_timeouts = timeouts;
-        rtd_fsm = STATE_ERROR;
+        // rtd_fsm = STATE_ERROR;
     }
 
     // Send current state via CAN

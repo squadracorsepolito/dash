@@ -35,16 +35,6 @@ extern CAN_HandleTypeDef hcan;
 
 /* USER CODE BEGIN Private defines */
 
-// Receive
-#define EBS_CMD_ID_CAN 0x004
-#define ASB_CMD_ID_CAN 0x006
-#define AS_STATE_ID_CAN 0x008
-#define FSM_ACK_ID_CAN 0x050
-#define PWM_CMD_ID_CAN 0x051
-
-#define TLB_ERROR_ID_CAN 0x020
-#define BOOTLOADER_ID_CAN 0x0A4
-
 // Send
 #define DASH_ERR_ID_CAN 0x015
 #define DASH_STATUS_ID_CAN 0x007

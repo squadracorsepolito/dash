@@ -36,13 +36,12 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
-Core/Src/as_fsm.c \
 Core/Src/button.c \
 Core/Src/can.c \
 Core/Src/dashboard.c \
 Core/Src/gpio.c \
 Core/Src/main.c \
-Core/Src/mission.c \
+Core/Src/sc22_evo_canlv.c \
 Core/Src/stm32f3xx_hal_msp.c \
 Core/Src/stm32f3xx_it.c \
 Core/Src/system_stm32f3xx.c \
@@ -198,8 +197,14 @@ vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
 # list of C objects
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
+
 # list of ASM program objects
-OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
+# list of ASM program objects
+UPPER_CASE_ASM_SOURCES = $(filter %.S,$(ASM_SOURCES))
+LOWER_CASE_ASM_SOURCES = $(filter %.s,$(ASM_SOURCES))
+
+OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(UPPER_CASE_ASM_SOURCES:.S=.o)))
+OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(LOWER_CASE_ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
 $(BUILD_DIR)/%.o: %.cpp STM32Make.make | $(BUILD_DIR) 
@@ -212,6 +217,9 @@ $(BUILD_DIR)/%.o: %.c STM32Make.make | $(BUILD_DIR)
 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s STM32Make.make | $(BUILD_DIR)
+	$(AS) -c $(CFLAGS) $< -o $@
+
+$(BUILD_DIR)/%.o: %.S STM32Make.make | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) STM32Make.make
@@ -250,6 +258,46 @@ clean:
 #######################################
 
 
+
+
+#######################################
+# can_build
+#######################################
+can_build: $(BUILD_DIR)/$(TARGET)_shifted.sx
+	
+      
+
+
+#######################################
+# $(BUILD_DIR)/$(TARGET)_shifted.sx
+#######################################
+$(BUILD_DIR)/$(TARGET)_shifted.sx: $(BUILD_DIR)/$(TARGET)_shifted.bin
+	bin2srec -a $$(grep 'FLASH (rx)      : ORIGIN =' STM32F302C8Tx_FLASH_shifted.ld | awk '{print $$6}' | sed 's/.$$//') -i $(BUILD_DIR)/$(TARGET)_shifted.bin -o $(BUILD_DIR)/$(TARGET)_shifted.sx
+      
+
+
+#######################################
+# $(BUILD_DIR)/$(TARGET)_shifted.elf
+#######################################
+$(BUILD_DIR)/$(TARGET)_shifted.elf: $(OBJECTS) STM32Make.make
+	$(CC) $(OBJECTS) $(MCU) $(ADDITIONALLDFLAGS) -TSTM32F302C8Tx_FLASH_shifted.ld $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections -o $@
+      
+
+
+#######################################
+# $(BUILD_DIR)/$(TARGET)_shifted.bin
+#######################################
+$(BUILD_DIR)/$(TARGET)_shifted.bin: $(BUILD_DIR)/$(TARGET)_shifted.elf | $(BUILD_DIR)
+	$(BIN) $< $@
+      
+
+
+#######################################
+# can_flash
+#######################################
+can_flash: $(BUILD_DIR)/$(TARGET)_shifted.sx
+	bootcommander -t=xcp_can -d=can0 -b=1000000 -tid=9h -rid=183h $(BUILD_DIR)/$(TARGET)_shifted.sx
+      
 	
 #######################################
 # dependencies

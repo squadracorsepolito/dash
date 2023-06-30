@@ -16,17 +16,15 @@
 
 typedef enum
 {
-    BUTTON_COCK = 0,
-    BUTTON_EXT,
-    BUTTON_MISSION,
+    BUTTON_RTD=0,
     BUTTON_COUNT
 } button;
 
 // Phisical condition of the button
 typedef enum
 {
-    BUTTON_DOWN = 0,
-    BUTTON_UP = 1,
+    BUTTON_DOWN = 1,
+    BUTTON_UP = 0,
 } button_condition;
 
 // Logical state of the button

@@ -1,3 +1,4 @@
 # Debug files
 openBLT_STM32F303VETx/Debug
 *.bkp
+**/build/**

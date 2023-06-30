@@ -124,4 +124,21 @@ sourceFiles:
 # When no makefile is present it will show a warning pop-up.
 # However when compilation without the CubeMX Makefile is desired, this can be turned of.
 suppressMakefileWarning: false
+
+customMakefileRules:
+- command: can_build
+  rule: ""
+  dependsOn: $(BUILD_DIR)/$(TARGET)_shifted.sx
+- command: $(BUILD_DIR)/$(TARGET)_shifted.sx
+  rule: "bin2srec -a $$(grep 'FLASH (rx)      : ORIGIN =' STM32F302C8Tx_FLASH_shifted.ld | awk '{print $$6}' | sed 's/.$$//') -i $(BUILD_DIR)/$(TARGET)_shifted.bin -o $(BUILD_DIR)/$(TARGET)_shifted.sx"
+  dependsOn: $(BUILD_DIR)/$(TARGET)_shifted.bin # can be left out    
+- command: $(BUILD_DIR)/$(TARGET)_shifted.elf
+  rule: "$(CC) $(OBJECTS) $(MCU) $(ADDITIONALLDFLAGS) -TSTM32F302C8Tx_FLASH_shifted.ld $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections -o $@"
+  dependsOn: $(OBJECTS) STM32Make.make
+- command: $(BUILD_DIR)/$(TARGET)_shifted.bin
+  rule: $(BIN) $< $@
+  dependsOn: $(BUILD_DIR)/$(TARGET)_shifted.elf | $(BUILD_DIR)
+- command: can_flash
+  rule: "bootcommander -t=xcp_can -d=can0 -b=1000000 -tid=9h -rid=183h $(BUILD_DIR)/$(TARGET)_shifted.sx"
+  dependsOn: $(BUILD_DIR)/$(TARGET)_shifted.sx
     

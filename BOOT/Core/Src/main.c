@@ -85,7 +85,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  // MX_CAN_Init();
+  MX_CAN_Init();
   /* USER CODE BEGIN 2 */
   BootInit();
   /* USER CODE END 2 */

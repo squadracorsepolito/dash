@@ -4,16 +4,12 @@
 
 // Map GPIOs to button indexes
 const GPIO_TypeDef *button_gpio[BUTTON_COUNT] = {
-    [BUTTON_COCK] = COCK_BTN_GPIO_Port,
-    [BUTTON_EXT] = EXT_BTN_GPIO_Port,
-    [BUTTON_MISSION] = MISSION_BTN_GPIO_Port};
+    [BUTTON_RTD] = RTD_BTN_GPIO_Port};
 const uint16_t button_pin[BUTTON_COUNT] = {
-    [BUTTON_COCK] = COCK_BTN_Pin,
-    [BUTTON_EXT] = EXT_BTN_Pin,
-    [BUTTON_MISSION] = MISSION_BTN_Pin};
+    [BUTTON_RTD] = RTD_BTN_Pin};
 
 // State keeping for each button
-button_state state[BUTTON_COUNT] = {BUTTON_RELEASED, BUTTON_RELEASED, BUTTON_RELEASED};
+button_state state[BUTTON_COUNT] = {BUTTON_RELEASED};
 
 // The last time each button changed state
 uint32_t down_time[BUTTON_COUNT] = {0};

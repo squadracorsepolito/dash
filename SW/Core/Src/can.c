@@ -22,7 +22,7 @@
 
 /* USER CODE BEGIN 0 */
 #include "utils.h"
-
+#include "sc22_evo_canlv.h"
 CAN_FilterTypeDef sFilterConfig;
 
 /* USER CODE END 0 */
@@ -71,8 +71,8 @@ void MX_CAN_Init(void)
     sFilterConfig.FilterBank = 0;
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
     sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
-    sFilterConfig.FilterIdHigh = (EBS_CMD_ID_CAN << 5);
-    sFilterConfig.FilterIdLow = (ASB_CMD_ID_CAN << 5);
+    sFilterConfig.FilterIdHigh = (SC22_EVO_CANLV_D_SPACE_RTD_ACK_FRAME_ID << 5);
+    sFilterConfig.FilterIdLow = (SC22_EVO_CANLV_D_SPACE_RTD_ACK_FRAME_ID << 5);
     sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
     sFilterConfig.FilterActivation = ENABLE;
     sFilterConfig.SlaveStartFilterBank = 14;
@@ -86,8 +86,8 @@ void MX_CAN_Init(void)
     sFilterConfig.FilterBank = 1;
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
     sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
-    sFilterConfig.FilterIdHigh = (AS_STATE_ID_CAN << 5);
-    sFilterConfig.FilterIdLow = (FSM_ACK_ID_CAN << 5);
+    sFilterConfig.FilterIdHigh = (SC22_EVO_CANLV_D_SPACE_PERIPHERALS_CTRL_FRAME_ID << 5);
+    sFilterConfig.FilterIdLow = (SC22_EVO_CANLV_D_SPACE_PERIPHERALS_CTRL_FRAME_ID << 5);
     sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
     sFilterConfig.FilterActivation = ENABLE;
     sFilterConfig.SlaveStartFilterBank = 14;
@@ -101,8 +101,8 @@ void MX_CAN_Init(void)
     sFilterConfig.FilterBank = 2;
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
     sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
-    sFilterConfig.FilterIdHigh = (PWM_CMD_ID_CAN << 5);
-    sFilterConfig.FilterIdLow = (TLB_ERROR_ID_CAN << 5);
+    sFilterConfig.FilterIdHigh = (0x9 << 5);
+    sFilterConfig.FilterIdLow = (0x9 << 5);
     sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
     sFilterConfig.FilterActivation = ENABLE;
     sFilterConfig.SlaveStartFilterBank = 14;
@@ -116,8 +116,38 @@ void MX_CAN_Init(void)
     sFilterConfig.FilterBank = 3;
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
     sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
-    sFilterConfig.FilterIdHigh = (BOOTLOADER_ID_CAN << 5);
-    sFilterConfig.FilterIdLow = (BOOTLOADER_ID_CAN << 5);
+    sFilterConfig.FilterIdHigh = (SC22_EVO_CANLV_TLB_BATTERY_SHUT_STATUS_FRAME_ID << 5);
+    sFilterConfig.FilterIdLow = (SC22_EVO_CANLV_TLB_BATTERY_SHUT_STATUS_FRAME_ID << 5);
+    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+    sFilterConfig.FilterActivation = ENABLE;
+    sFilterConfig.SlaveStartFilterBank = 14;
+
+    if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
+    {
+        /* Filter configuration Error */
+        Error_Handler();
+    }
+
+    sFilterConfig.FilterBank = 4;
+    sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
+    sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
+    sFilterConfig.FilterIdHigh = (SC22_EVO_CANLV_TLB_BATTERY_TSAL_STATUS_FRAME_ID << 5);
+    sFilterConfig.FilterIdLow = (SC22_EVO_CANLV_TLB_BATTERY_TSAL_STATUS_FRAME_ID << 5);
+    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+    sFilterConfig.FilterActivation = ENABLE;
+    sFilterConfig.SlaveStartFilterBank = 14;
+
+    if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
+    {
+        /* Filter configuration Error */
+        Error_Handler();
+    }
+
+    sFilterConfig.FilterBank = 5;
+    sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
+    sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
+    sFilterConfig.FilterIdHigh = (SC22_EVO_CANLV_SENS_FRONT_1_FRAME_ID << 5);
+    sFilterConfig.FilterIdLow = (SC22_EVO_CANLV_SENS_FRONT_1_FRAME_ID << 5);
     sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
     sFilterConfig.FilterActivation = ENABLE;
     sFilterConfig.SlaveStartFilterBank = 14;
