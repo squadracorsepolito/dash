@@ -440,7 +440,7 @@ void CoreDashBoard(void)
     {
         error = ERROR_CAN_WDG;
         boards_timeouts = timeouts;
-        // rtd_fsm = STATE_ERROR;
+        rtd_fsm = STATE_ERROR;
     }
 
     // Send current state via CAN
