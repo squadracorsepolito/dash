@@ -13,7 +13,7 @@
  */
 typedef enum
 {
-    WDG_BOARD_DSPACE,
+    WDG_BOARD_DSPACE = 0,
     WDG_BOARD_TLB,
     WDG_BOARD_SENS_FRONT,
     WDG_NUM_BOARDS

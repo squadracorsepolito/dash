@@ -6,7 +6,7 @@
 # - entry_2
 
 # The project name
-target: Dash22
+target: Dash22evo
 # Can be C or C++
 language: C
 
@@ -77,10 +77,9 @@ includeDirectories:
   - Drivers/CMSIS/Include
   - Inc/**
   - Core/Inc/**
-  - Core/Lib/**
+  - Lib/**
   - Src/**
   - Core/Src/**
-  - Core/Lib/**
 
 
 # Files that should be included in the compilation.
@@ -118,7 +117,7 @@ sourceFiles:
   - Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart_ex.c
   - Src/**
   - Core/Src/**
-  - Core/Lib/**
+  - Lib/**
 
 
 # When no makefile is present it will show a warning pop-up.

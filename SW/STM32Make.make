@@ -13,7 +13,7 @@
 ######################################
 # target
 ######################################
-TARGET = Dash22
+TARGET = Dash22evo
 
 
 ######################################
@@ -41,7 +41,6 @@ Core/Src/can.c \
 Core/Src/dashboard.c \
 Core/Src/gpio.c \
 Core/Src/main.c \
-Core/Src/sc22_evo_canlv.c \
 Core/Src/stm32f3xx_hal_msp.c \
 Core/Src/stm32f3xx_it.c \
 Core/Src/system_stm32f3xx.c \
@@ -66,7 +65,8 @@ Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_rcc_ex.c \
 Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_tim.c \
 Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_tim_ex.c \
 Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart.c \
-Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart_ex.c
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart_ex.c \
+Lib/SCan/SC22EVO/c_source/mcb.c
 
 
 CPP_SOURCES = \
@@ -142,7 +142,8 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32F3xx/Include \
 -IDrivers/CMSIS/Include \
 -IDrivers/STM32F3xx_HAL_Driver/Inc \
--IDrivers/STM32F3xx_HAL_Driver/Inc/Legacy
+-IDrivers/STM32F3xx_HAL_Driver/Inc/Legacy \
+-ILib/SCan/SC22EVO/c_source
 
 
 

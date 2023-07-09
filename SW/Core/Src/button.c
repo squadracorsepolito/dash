@@ -72,7 +72,7 @@ void button_sample()
 
 bool button_get(button btn)
 {
-    return state[btn] != BUTTON_RELEASED && ReturnTime_100us() - down_time[btn] >= BUTTON_SHORT_PRESS_TIME_100us;
+    return state[btn] != BUTTON_RELEASED && ReturnTime_100us() - down_time[btn] >= BUTTON_SAMPLE_TIME_100us;
 }
 
 void button_set_shortpress_callback(button btn, func_type function)

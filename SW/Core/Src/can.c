@@ -22,7 +22,8 @@
 
 /* USER CODE BEGIN 0 */
 #include "utils.h"
-#include "sc22_evo_canlv.h"
+#include "mcb.h"
+
 CAN_FilterTypeDef sFilterConfig;
 
 /* USER CODE END 0 */
@@ -39,16 +40,16 @@ void MX_CAN_Init(void)
 
   /* USER CODE BEGIN CAN_Init 1 */
 
-    // CAN Config
-    // APB1 = 30 MHz
-    // Periphelal clock = APB1/Prescaler = 30/3 = 10 Mhz
+  // CAN Config
+  // APB1 = 30 MHz
+  // Periphelal clock = APB1/Prescaler = 30/3 = 10 Mhz
 
-    // Time Quanta = SJW (start_bit) + BS1 + BS2 = 8 + 1 + 1 = 10
+  // Time Quanta = SJW (start_bit) + BS1 + BS2 = 8 + 1 + 1 = 10
 
-    // Periphelal Clock / Time Quanta = CAN bitrate -> 10Mhz/10 = 1Mbit/s
+  // Periphelal Clock / Time Quanta = CAN bitrate -> 10Mhz/10 = 1Mbit/s
 
-    // or prescaler 6; Clock 30/6 = 5Mhz
-    // Time Quanta = 2 + 2 + 1
+  // or prescaler 6; Clock 30/6 = 5Mhz
+  // Time Quanta = 2 + 2 + 1
 
   /* USER CODE END CAN_Init 1 */
   hcan.Instance = CAN;
@@ -68,107 +69,107 @@ void MX_CAN_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN CAN_Init 2 */
-    sFilterConfig.FilterBank = 0;
-    sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
-    sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
-    sFilterConfig.FilterIdHigh = (SC22_EVO_CANLV_D_SPACE_RTD_ACK_FRAME_ID << 5);
-    sFilterConfig.FilterIdLow = (SC22_EVO_CANLV_D_SPACE_RTD_ACK_FRAME_ID << 5);
-    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
-    sFilterConfig.FilterActivation = ENABLE;
-    sFilterConfig.SlaveStartFilterBank = 14;
+  sFilterConfig.FilterBank = 0;
+  sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
+  sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
+  sFilterConfig.FilterIdHigh = (MCB_D_SPACE_RTD_ACK_FRAME_ID << 5);
+  sFilterConfig.FilterIdLow = (MCB_D_SPACE_RTD_ACK_FRAME_ID << 5);
+  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+  sFilterConfig.FilterActivation = ENABLE;
+  sFilterConfig.SlaveStartFilterBank = 14;
 
-    if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
-    {
-        /* Filter configuration Error */
-        Error_Handler();
-    }
+  if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
+  {
+    /* Filter configuration Error */
+    Error_Handler();
+  }
 
-    sFilterConfig.FilterBank = 1;
-    sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
-    sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
-    sFilterConfig.FilterIdHigh = (SC22_EVO_CANLV_D_SPACE_PERIPHERALS_CTRL_FRAME_ID << 5);
-    sFilterConfig.FilterIdLow = (SC22_EVO_CANLV_D_SPACE_PERIPHERALS_CTRL_FRAME_ID << 5);
-    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
-    sFilterConfig.FilterActivation = ENABLE;
-    sFilterConfig.SlaveStartFilterBank = 14;
+  sFilterConfig.FilterBank = 1;
+  sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
+  sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
+  sFilterConfig.FilterIdHigh = (MCB_D_SPACE_PERIPHERALS_CTRL_FRAME_ID << 5);
+  sFilterConfig.FilterIdLow = (MCB_D_SPACE_PERIPHERALS_CTRL_FRAME_ID << 5);
+  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+  sFilterConfig.FilterActivation = ENABLE;
+  sFilterConfig.SlaveStartFilterBank = 14;
 
-    if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
-    {
-        /* Filter configuration Error */
-        Error_Handler();
-    }
+  if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
+  {
+    /* Filter configuration Error */
+    Error_Handler();
+  }
 
-    sFilterConfig.FilterBank = 2;
-    sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
-    sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
-    sFilterConfig.FilterIdHigh = (0x9 << 5);
-    sFilterConfig.FilterIdLow = (0x9 << 5);
-    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
-    sFilterConfig.FilterActivation = ENABLE;
-    sFilterConfig.SlaveStartFilterBank = 14;
+  sFilterConfig.FilterBank = 2;
+  sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
+  sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
+  sFilterConfig.FilterIdHigh = (0x9 << 5);
+  sFilterConfig.FilterIdLow = (0x9 << 5);
+  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+  sFilterConfig.FilterActivation = ENABLE;
+  sFilterConfig.SlaveStartFilterBank = 14;
 
-    if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
-    {
-        /* Filter configuration Error */
-        Error_Handler();
-    }
+  if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
+  {
+    /* Filter configuration Error */
+    Error_Handler();
+  }
 
-    sFilterConfig.FilterBank = 3;
-    sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
-    sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
-    sFilterConfig.FilterIdHigh = (SC22_EVO_CANLV_TLB_BATTERY_SHUT_STATUS_FRAME_ID << 5);
-    sFilterConfig.FilterIdLow = (SC22_EVO_CANLV_TLB_BATTERY_SHUT_STATUS_FRAME_ID << 5);
-    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
-    sFilterConfig.FilterActivation = ENABLE;
-    sFilterConfig.SlaveStartFilterBank = 14;
+  sFilterConfig.FilterBank = 3;
+  sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
+  sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
+  sFilterConfig.FilterIdHigh = (MCB_TLB_BATTERY_SHUT_STATUS_FRAME_ID << 5);
+  sFilterConfig.FilterIdLow = (MCB_TLB_BATTERY_SHUT_STATUS_FRAME_ID << 5);
+  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+  sFilterConfig.FilterActivation = ENABLE;
+  sFilterConfig.SlaveStartFilterBank = 14;
 
-    if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
-    {
-        /* Filter configuration Error */
-        Error_Handler();
-    }
+  if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
+  {
+    /* Filter configuration Error */
+    Error_Handler();
+  }
 
-    sFilterConfig.FilterBank = 4;
-    sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
-    sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
-    sFilterConfig.FilterIdHigh = (SC22_EVO_CANLV_TLB_BATTERY_TSAL_STATUS_FRAME_ID << 5);
-    sFilterConfig.FilterIdLow = (SC22_EVO_CANLV_TLB_BATTERY_TSAL_STATUS_FRAME_ID << 5);
-    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
-    sFilterConfig.FilterActivation = ENABLE;
-    sFilterConfig.SlaveStartFilterBank = 14;
+  sFilterConfig.FilterBank = 4;
+  sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
+  sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
+  sFilterConfig.FilterIdHigh = (MCB_TLB_BATTERY_TSAL_STATUS_FRAME_ID << 5);
+  sFilterConfig.FilterIdLow = (MCB_TLB_BATTERY_TSAL_STATUS_FRAME_ID << 5);
+  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+  sFilterConfig.FilterActivation = ENABLE;
+  sFilterConfig.SlaveStartFilterBank = 14;
 
-    if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
-    {
-        /* Filter configuration Error */
-        Error_Handler();
-    }
+  if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
+  {
+    /* Filter configuration Error */
+    Error_Handler();
+  }
 
-    sFilterConfig.FilterBank = 5;
-    sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
-    sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
-    sFilterConfig.FilterIdHigh = (SC22_EVO_CANLV_SENS_FRONT_1_FRAME_ID << 5);
-    sFilterConfig.FilterIdLow = (SC22_EVO_CANLV_SENS_FRONT_1_FRAME_ID << 5);
-    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
-    sFilterConfig.FilterActivation = ENABLE;
-    sFilterConfig.SlaveStartFilterBank = 14;
+  sFilterConfig.FilterBank = 5;
+  sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
+  sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
+  sFilterConfig.FilterIdHigh = (MCB_SENS_FRONT_1_FRAME_ID << 5);
+  sFilterConfig.FilterIdLow = (MCB_SENS_FRONT_1_FRAME_ID << 5);
+  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+  sFilterConfig.FilterActivation = ENABLE;
+  sFilterConfig.SlaveStartFilterBank = 14;
 
-    if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
-    {
-        /* Filter configuration Error */
-        Error_Handler();
-    }
+  if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
+  {
+    /* Filter configuration Error */
+    Error_Handler();
+  }
 
-    if (HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
-    {
-        /* Start Error */
-        Error_Handler();
-    }
+  if (HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+  {
+    /* Start Error */
+    Error_Handler();
+  }
 
-    if (HAL_CAN_Start(&hcan) != HAL_OK)
-    {
-        /* Start Error */
-        Error_Handler();
-    }
+  if (HAL_CAN_Start(&hcan) != HAL_OK)
+  {
+    /* Start Error */
+    Error_Handler();
+  }
   /* USER CODE END CAN_Init 2 */
 
 }
@@ -242,26 +243,26 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
 /*Send message to CAN BUS*/
 void CAN_Msg_Send(CAN_HandleTypeDef *hcan, CAN_TxHeaderTypeDef *pHeader, uint8_t aData[], uint32_t *pTxMailbox, uint32_t TimeOut)
 {
-    static uint32_t can_counter_100us = 0;
-    can_counter_100us = ReturnTime_100us();
+  static uint32_t can_counter_100us = 0;
+  can_counter_100us = ReturnTime_100us();
 
-    while (HAL_CAN_GetTxMailboxesFreeLevel(hcan) < 1)
+  while (HAL_CAN_GetTxMailboxesFreeLevel(hcan) < 1)
+  {
+    if (delay_fun(&can_counter_100us, TimeOut))
     {
-        if (delay_fun(&can_counter_100us, TimeOut))
-        {
-            // Error_Handler();
-            HAL_CAN_ResetError(hcan);
-            HAL_CAN_AbortTxRequest(hcan, *pTxMailbox);
-        }
+      // Error_Handler();
+      HAL_CAN_ResetError(hcan);
+      HAL_CAN_AbortTxRequest(hcan, *pTxMailbox);
     }
+  }
 
-    if (HAL_CAN_AddTxMessage(hcan, pHeader, aData, pTxMailbox) != HAL_OK)
-    {
-        /* Transmission request Error */
-        // Error_Handler();
-        HAL_CAN_ResetError(hcan);
-        HAL_CAN_AbortTxRequest(hcan, *pTxMailbox);
-    }
+  if (HAL_CAN_AddTxMessage(hcan, pHeader, aData, pTxMailbox) != HAL_OK)
+  {
+    /* Transmission request Error */
+    // Error_Handler();
+    HAL_CAN_ResetError(hcan);
+    HAL_CAN_AbortTxRequest(hcan, *pTxMailbox);
+  }
 }
 
 /* USER CODE END 1 */
