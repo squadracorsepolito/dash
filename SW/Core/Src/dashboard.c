@@ -285,14 +285,14 @@ void RTD_fsm(uint32_t delay_100us) {
                     rtd_fsm_state = STATE_TSON;
                 break;
             case STATE_TSON:
-                LedBlinking(RTD_CMD_GPIO_Port, RTD_CMD_Pin, &blink_delay_last, 200000);
+                LedBlinking(RTD_CMD_GPIO_Port, RTD_CMD_Pin, &blink_delay_last, 2000);
                 if(dspace_rtd_state == 3)
                     rtd_fsm_state = STATE_RTD_SOUND;
                 break;
             case STATE_RTD_SOUND:
                 HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, GPIO_PIN_SET);
                 HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_SET);
-                if(HAL_GetTick()-time > 1000) {
+                if(HAL_GetTick() - time > 1000) {
                     HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_RESET);
                     rtd_fsm_state = STATE_RTD;
                 }
