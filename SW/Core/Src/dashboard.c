@@ -42,8 +42,9 @@ enum {
     STATE_IDLE,
     STATE_TSON,
     STATE_RTD_SOUND,
-    STATE_RTD
-} rtd_fsm_state;
+    STATE_RTD,
+    STATE_DISCHARGE
+} rtd_fsm_state = STATE_IDLE;
 
 /* PWM Variables */
 volatile uint8_t PWM_BAT_FAN;
@@ -127,13 +128,12 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     }
     else if ((RxHeader.StdId == MCB_D_SPACE_PERIPHERALS_CTRL_FRAME_ID) && (RxHeader.DLC == MCB_D_SPACE_PERIPHERALS_CTRL_LENGTH))
     {
-#if PCBVER == 2
         mcb_d_space_peripherals_ctrl_unpack(&msgs.per_ctrl, RxData, MCB_D_SPACE_PERIPHERALS_CTRL_LENGTH);
 
         PWM_RADIATOR_FAN = (msgs.per_ctrl.rad_fan_pwm_ctrl / 100. * __HAL_TIM_GetAutoreload(&RADIATOR_FANS_PWM_TIM));
         __HAL_TIM_SET_COMPARE(&RADIATOR_FANS_PWM_TIM, RADIATOR_FANS_PWM_CH, PWM_RADIATOR_FAN);
-#endif
-        PWM_BAT_FAN = (msgs.per_ctrl.batt_hv_fan_ctrl / 100. * __HAL_TIM_GetAutoreload(&RADIATOR_FANS_PWM_TIM));
+        
+        PWM_BAT_FAN = (msgs.per_ctrl.batt_hv_fan_ctrl / 100. * __HAL_TIM_GetAutoreload(&BAT_FAN_PWM_TIM));
         __HAL_TIM_SET_COMPARE(&BAT_FAN_PWM_TIM, BAT_FAN_PWM_CH, PWM_BAT_FAN);
     }
 
@@ -185,6 +185,8 @@ void InitDashBoard()
     HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_SET);
     HAL_Delay(50);
     HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_RESET);
+
+    HAL_GPIO_WritePin(SD_CMD_GPIO_Port, SD_CMD_Pin, GPIO_PIN_RESET);
 
     // Test inputs
     // if (button_get(BUTTON_RTD))
@@ -281,13 +283,19 @@ void RTD_fsm(uint32_t delay_100us) {
         switch(rtd_fsm_state) {
             case STATE_IDLE:
                 HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, GPIO_PIN_RESET);
+                HAL_GPIO_WritePin(SD_CMD_GPIO_Port, SD_CMD_Pin, GPIO_PIN_RESET);
                 if(dspace_rtd_state == 2)
                     rtd_fsm_state = STATE_TSON;
+                else if(dspace_rtd_state == 5 || dspace_rtd_state == -1)
+                    rtd_fsm_state = STATE_DISCHARGE;
                 break;
             case STATE_TSON:
                 LedBlinking(RTD_CMD_GPIO_Port, RTD_CMD_Pin, &blink_delay_last, 2000);
-                if(dspace_rtd_state == 3)
+                if(dspace_rtd_state == 3 || dspace_rtd_state == 4) {
                     rtd_fsm_state = STATE_RTD_SOUND;
+                    time = HAL_GetTick();
+                } else if(dspace_rtd_state == 5 || dspace_rtd_state == -1)
+                    rtd_fsm_state = STATE_DISCHARGE;
                 break;
             case STATE_RTD_SOUND:
                 HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, GPIO_PIN_SET);
@@ -299,8 +307,17 @@ void RTD_fsm(uint32_t delay_100us) {
                 break;
             case STATE_RTD:
                 HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, GPIO_PIN_SET);
-                if(dspace_rtd_state != 4)
+                if(dspace_rtd_state <= 0)
+                    rtd_fsm_state = STATE_DISCHARGE;
+                break;
+            case STATE_DISCHARGE:
+                HAL_GPIO_WritePin(RTD_CMD_GPIO_Port, RTD_CMD_Pin, GPIO_PIN_RESET);
+                HAL_GPIO_WritePin(SD_CMD_GPIO_Port, SD_CMD_Pin, GPIO_PIN_SET);
+                if(dspace_rtd_state == 0)
                     rtd_fsm_state = STATE_IDLE;
+                break;
+            default:
+                rtd_fsm_state = STATE_IDLE;
                 break;
         }
     }
@@ -313,7 +330,14 @@ void CoreDashBoard(void)
 {
     // Blink green led to signal activity
     static uint32_t led_blink = 0;
+    static uint32_t imd_err_blink = 0;
+
     LedBlinking(LED2_GPIO_Port, LED2_Pin, &led_blink, 2000);
+
+    if(IMD_ERR)
+        LedBlinking(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, &imd_err_blink, 2500);
+    else if(rtd_fsm_state != STATE_RTD_SOUND)
+        HAL_GPIO_WritePin(BUZZEREV_CMD_GPIO_Port, BUZZEREV_CMD_Pin, GPIO_PIN_RESET);
 
     // Update state Cockpit's LEDs
     UpdateCockpitLed(1000);
@@ -333,6 +357,9 @@ void CoreDashBoard(void)
     {
         error = ERROR_CAN_WDG;
         boards_timeouts = timeouts;
+    } else {
+        error = 0;
+        boards_timeouts = 0;
     }
 
     // Send current state via CAN

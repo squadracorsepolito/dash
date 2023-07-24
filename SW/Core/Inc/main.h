@@ -78,6 +78,8 @@ void Error_Handler(void);
 #define LED1_GPIO_Port GPIOB
 #define LED2_Pin GPIO_PIN_8
 #define LED2_GPIO_Port GPIOA
+#define SD_CMD_Pin GPIO_PIN_6
+#define SD_CMD_GPIO_Port GPIOB
 #define BAT_FAN_PWM_CMD_Pin GPIO_PIN_8
 #define BAT_FAN_PWM_CMD_GPIO_Port GPIOB
 #define RADIATOR_FANS_PWM_CMD_Pin GPIO_PIN_9
